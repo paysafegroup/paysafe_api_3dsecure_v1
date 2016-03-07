@@ -1,0 +1,785 @@
+FORMAT: 1A
+HOST: https://api.netbanx.com/threedsecure/v1/
+
+# NETBANX 3D Secure API
+
+# Overview 
+
+A transaction using Verified by Visa or MasterCard SecureCode will initiate a redirection to the website of the card issuing bank to authorize the transaction. Each issuing bank could use any kind of authentication method (the protocol does not cover this) but typically, a password-based method is used. So to effectively buy on the Internet means using a password tied to the card. The Verified by Visa protocol recommends the bank's verification page to load in an [inline frame] (http://en.wikipedia.org/wiki/HTML_element#Frames) session. In this way, the bank's systems can be held responsible for most security breaches.
+
+The basic concept of the protocol is to tie the financial authorization process with an online authentication.
+
+1. The merchant submits an Enrollment Lookup request on the cardholder PAN (credit card) to the enrollmentchecks endpoint. This will initiate a lookup to identify whether the card is registered for 3D Secure. 
+
+2. The NETBANX 3D Secure API submits an enrollment lookup to the appropriate Visa or MasterCard directory server. 
+
+ **Note:** If the call to the directory server does not return within 10 seconds, a call is made to the secondary directory server.
+
+3. The response from the directory server is decoded and stored by the NETBANX 3D Secure API and passed back to the merchant.
+
+4. The *enrollmentchecks* response contains the *threeDEnrollment* flag. If this is "N" then the process would jump to step 9 (to proceed with the authorization without 3D Secure). If this is "Y" then the *acsURL* and *paReq* fields will be populated. These values are used in the next step.
+
+5. The merchant renders an HTML form that POSTS to the *acsURL* returned above. This form needs to contains the payment authentication request (the *paReq*), the merchant return URL (the *TermURL*), and an optional variable (the *MD*) that the 3D ACS server will send back at the end of the process.
+
+6. The 3D ACS server will post the *MD* and payment response (the *PaRes*) back to the *TermURL* provided.
+
+7. The merchant submits the *PaRes* to the *authentications* endpoint, along with their reference.
+
+8. The authentication response from step 7 will contain the *threeDResult*, *signatureStatus*, *eci*, *cavv* and *xid*. 
+
+9. These fields need to be passed into the *cardpayments* endpoint for an authorization or payment along with the original card details.
+
+10. Assuming these details are passed into the Card Payments API correctly and the card is 3D Secure authorized, fraud liability is shifted from the merchant to the bank.
+
+![](https://github.com/paysafegroup/netbanx_3dsecure_rest_api_v1/raw/master/images/3DAPIOverview_2.png
+
+# Authentication
+
+In order for you to use the NETBANX REST API, NETBANX must first set you up on their system and provide you with an API key. Your API key looks something like this:
+
+  *  Key ID – MerchantXYZ
+  * Key Password – B-tst1-0-51ed39e4-312d02345d3f123120881dff9bb4020a89e8ac44cdfdcecd702151182fdc952272661d290ab2e5849e31bb03deede7e
+  
+The case-sensitive API key is sent using HTTP Basic Authentication. To use HTTP Basic Authentication, you must send the API key credentials using the Authorization header with every request. The Authorization header is constructed as follows:
+
+1. The Key ID and Key Password are combined into a string separated by a colon, e.g.,“Key ID:Key Password”.
+
+2. The resulting string literal is then encoded using Base64.
+
+3. The authorization method and a space (i.e., “Basic”) are then put before the encoded string.
+
+For example, using the Key ID and Password examples above, the header is formed as follows:
+
+``Authorization: Basic
+TWVyY2hhbnRYWVo6Qi10c3QxLTAtNTFlZDM5ZTQtMzEyZDAyMzQ1ZDNmMTIzMTIwODgxZGZmOWJiNDAyMGE4OWU4YWM0NGNkZmRjZWNkNzAyMTUxMTgyZmRjOTU yMjcyNjYxZDI5MGFiMmU1ODQ5ZTMxYmIwM2RlZWRlN2U=``
+
+For additional details, please refer to [http://en.wikipedia.org/wiki/Basic_access_authentication](http://en.wikipedia.org/wiki/Basic_access_authentication).
+
+**Note:** Your Production API key will be different from your Test API key. Contact your account manager for details. You must keep your API keys safe and ensure that it is used appropriately for your needs.
+
+# URLs
+
+## Test URL
+
+In order to test your integration with NETBANX, use the following Test URL:
+
+``https://api.test.netbanx.com``
+
+For example:
+
+``https://api.test.netbanx.com/threedsecure/v1/accounts/{ACCOUNT_ID}``
+
+## Production URL
+
+In order to process live requests with NETBANX, use the following Production URL:
+
+``https://api.netbanx.com``
+
+For example:
+
+``https://api.netbanx.com/threedsecure/v1/accounts/{ACCOUNT_ID}``
+
+# API
+
+The 3D Secure API allows merchants to verify whether a credit card being used for an online transaction is registered in the 3D Secure program, and, if it is, to then use 3D Secure to authenticate that card. The REST protocol uses JSON for all requests and responses.
+
+The following request types are supported: 
+
+  * [Enrollment Lookups](#enrollmentlookup)
+  * [Authentications](#authenticationrequest)
+  
+**API Endpoint:** `https://api.netbanx.com/threedsecure/v1/accounts/{ACCOUNT_ID}`
+
+**Resource Patterns**
+
+|Endpoint URL                                       |Description                                        |Action |
+|---                                                |---                                                |---    |
+|/enrollmentchecks                                  |Verify whether a card is enrolled in 3D Secure     |POST   |
+|enrollmentchecks/{ENROLLMENT_ID}                   |Look up an enrollment response                     |GET    |
+|/enrollmentchecks/{ENROLLMENT_ID}/authentications  |Authenticate a card with 3D Secure                 |POST   |
+|/authentications/{AUTHENTICATION_ID}               |Look up an authentication request                  |GET    |
+
+
+
+# Getting Started
+
+You can use the 3D Secure REST APIs to verify whether a credit card is enrolled for the 3D Secure service, and then, if it is, to authenticate that credit card when it is being used for an online purchase request. This enables you to process transactions through the Card Payments API that are fully 3D Secure. 
+
+## Verify That the 3D Secure Service Is Available
+
+The following request verifies that the service is up and accessible from your network.
+
+``curl -X GET https://api.test.netbanx.com/threedsecure/monitor``
+
+**Response**
+
+``{
+            "status" : "READY"
+            }
+``
+
+**Note:** The system should respond with a status of READY if it is available.
+
+## Perform an Enrollment Lookup
+
+To perform a 3D Secure enrollment lookup, you must initiate a POST request to the *enrollmentchecks* endpoint. This will perform a lookup on the card number and tell you if 3D Secure is available for the transaction you are trying to process. If 3D Secure is available, this call will return the information you need to proceed to the next step in the process.
+
+    curl -X POST https://api.test.netbanx.com/threedsecure/v1/accounts/89987201/enrollmentchecks \
+    -u devcentre322:B-qa2-0-53625f86-302c021476f52bdc9deab7aea876bb28762e62f92fc671e2d0214736abf501e9675e55940e83ef77f5c304edc7968 \
+    -H 'Content-type: application/json' \
+    -d '{        "merchantRefNum": "merchantABC-123-enrollmentchecks",
+        "amount": 5000,
+        "currency" : "USD",
+        "customerIp": "172.0.0.1",
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
+        "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "merchantUrl": "https://www.merchant.com",
+        "card": {
+            "cardNum": "4206720814705635",
+            "cardExpiry": {
+                "month": 2,
+                "year": 2018
+            }
+        }
+    }'
+
+You should obtain the userAgent and acceptHeader from the cardholder's browser headers upon the submission of the payment request and pass them through with the enrollment lookup.
+
+**Note:** Prior to trying the example, you should:
+
+  * Provide a unique merchant reference number for each transaction.
+  * Replace the account number (89987201) in the URL with the test account number you received.
+  * Replace the API key (after the -u) with the API key you have received.
+  
+For a card that is enrolled in 3D Secure, a response with the following structure will be returned.
+
+    {
+    "acsURL": "https://vbv.issueracs.com/3ds/acsendpoint?foo=bar",
+    "txnTime": "2014-12-11T12:21:33Z",
+    "customerIp": "127.0.0.1",
+    "status": "COMPLETED",
+    "threeDEnrollment": "Y",
+    "merchantRefNum": "merchantABC-123-enrollmentchecks",
+    "currency": "USD",
+    "amount": 5000,
+    "card": {
+        "lastDigits": "5635",
+        "cardExpiry": {
+            "month": 12,
+            "year": 2018
+        },
+        "type": "VI"
+    },
+    "id": "5da985f9-8671-4048-ab85-856be2885ce3",
+    "paReq": "eJxVUttOwkAQ/RXCO91LS2nJsEmVqBgwRAlGX0izndgGe2G7pfD37kIr+jZnLmfPnFnYpApx/oayUShghXUdf+EgS2ZDtT9Thzpsd8xHCR5HsR5RvmMeC1xKvdDdudwNfddk6FDAOnrFg4AjqjorC8HMJAfSQ0OsZBoXWkAsD3eLF+GFPKQUSAchR7WYCz9gQeiZwSuEIs5RyBTlvmy0xloDuaRAlk2h1VkE3AfSA2jUt0i1ruopIW3bOlldObLMgdgCkJuIdWOj2hCdskQkOdWfj1u+fH+gy0103nycn7erpI7aaAbEdkASaxScmu05YwPGp5xNXRfIJQ9xbhWIMXeokdMhqOwjUV+ylb8ZMI4rLGS/Q48AT1VZoOkwNvzGQG6S75+si1IbgzxDO+E0YN6Ejn13bP28FCxLZiwxkq80FgCxo6Q7FemObaJ/n+AHOYusjA==",
+    "links": [
+        {
+            "rel": "self",
+            "href": "http://apikey@api.test.netbanx.com/threedsecure/v1/accounts/89996498/enrollmentchecks/5da985f9-8671-4048-ab85-856be2885ce3"
+        }
+    ]
+    }
+    
+  * If the value for the *threeDEnrollment* parameter = Y, the card is enrolled in 3D Secure. In this case, the result will contain the *acsURL* and *paReq* fields that are required to continue the authentication process. 
+  * If the value for the threeDEnrollment parameter = N, the card is not enrolled in 3D Secure. In this case, you can decide either to submit the authorization for processing via the Card Payments API or to decline the transaction yourself.    
+  
+**Note:**  If the value for the *threeDEnrollment* parameter = N there is no liability shift.
+
+## Submit a Request to the 3D Secure Server and Retrieve the PaRes
+
+If the *enrollmentchecks* process indicates that the card is enabled for 3D Secure, you can redirect the cardholder to their card issuer's ACS server. This phase of the process must be handled by the merchant systems, and is covered here to provide a brief overview of what is involved. For more details, please consult with the Verified by Visa and MasterCard SecureCode documentation available from Visa and MasterCard respectively.
+
+From the enrollment request, you will need to map the 3D Secure API field names to the 3D Secure field names, and provide your own *TermURL* and *MD* fields.
+
+|Element        |3DS Form Field     |Type       | Description
+|---            |---                |---        |---
+|acsURL         |N/A                |String     |This is the URL of the card issuer's ACS server. You are required to post all values with a 3DS Form Field to this ACS server to continue the 3D Secure process.
+|paReq          |PaReq              |String     |This field contains encoded data about the transaction that is obtained from the Visa/MasterCard directory servers. You must POST this field in an HTML Form to the *acsURL* mentioned above.
+|N/A            |TermUrl            |String     |This is the URL your customer will be returned to at the end of the 3D Secure authentication process. You must POST this field along with the *PaReq* to the *acsURL*.
+|N/A            |MD                 |String     |This optional field is available for merchant data, which will be posted back to your *TermURL* at the end of the 3D Secure authentication process.
+
+After the authentication process has taken place, the ACS server will POST a response with the following values back to your *TermURL* endpoint:
+
+|Element        |3DS Form Field     |Type       | Description
+|---            |---                |---        |---
+|N/A            |MD                 |String     |This is the merchant data that was originally POSTed to the 3D Secure ACS server.
+|paRes          |PaRes              |String     |This is the payment response field. It comprises a lengthy encoded string, similar in form to the *paReq* but usually longer. You will need to pass this field back to the 3D Secure API to validate the authentication results.
+
+**Note:** Constraints on these fields are undocumented and can vary based on the ACS implementation. Data sizes can exceed 64kb for the PaRes result in some instances.
+
+In most implementations, you will need to use the session data passed back in the *MD* field to reconnect the browser session back to the customer. You will need the *PaRes* in order to continue with the 3D Secure authentication process.
+
+## Perform a 3D Secure Authentication
+
+Once you have retrieved the PaRes from the ACS server, you will need to verify the response against the *authentications* endpoint in order to verify and extract the values required to proceed with the card authorization.
+
+Use the *PaRes* value returned from the ACS server to populate the *paRes* for the authentications endpoint for the enrollment lookup:
+
+POST https://api.netbanx.com/threedsecure/v1/accounts/89996498/enrollmentchecks/5da985f9-8671-4048-ab85-856be2885ce3/authentications
+
+``{
+    "merchantRefNum": "merchantABC-123-authentications",
+    "paRes": "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"
+}``
+
+This will result in a response with the following structure:
+
+    {
+        "threeDResult" : "Y",
+        "txnTime" : "2014-12-11T12:26:52Z",
+        "cavv" : "MjAgY2hhcmFjdGVyIG1lc3NhZ2U=",
+        "signatureStatus" : "Y",
+        "status" : "COMPLETED",
+        "merchantRefNum" : "merchantABC-123-authentications",
+        "xid" : "dm0tZGV2LWF0LTAyTYyJVMdsAwA=",
+        "eci" : 5,
+        "id" : "caed792d-e424-46da-ad96-fdb4ef488009",
+        "links" : [
+            {
+            "rel" : "self",
+            "href" : "https://api.netbanx.com/threedsecure/v1/accounts/89996498/authentications/caed792d-e424-46da-ad96-fdb4ef488009"
+            }
+        ]
+    }
+
+Once you have received a COMPLETED status, you can pass the value for the *threeDEnrollment* parameter from the enrollment lookup request and the values for *cavv*, *xid*, *signatureStatus*, *threeDResult*, and *eci* parameters from the authentication request into the card payments API to authorize a 3D Secure card transaction.
+
+# Testing Instructions
+
+The NETBANX Test environment can be used to test websites or applications without actually running transactions through a live 3D Secure service. It is important to make sure that your systems are working correctly before going into a live environment.
+
+**Note:** 3D Secure transactions processed in the Test environment are not sent to the live network, but through a simulator.
+
+With the NETBANX 3D Secure API you can test the following through a simulator:
+
+*   Y – Authentication Successful
+
+*   N – Authentication Failed
+
+*   U – Authentication Could Not Be Performed
+
+*   A – Attempts Processing Performed
+
+To use the Test environment, you must post your requests to the following endpoint:
+
+https://api.test.netbanx.com/threedsecure/v1/accounts/{test_account_number}
+
+## NETBANX Test ACS Simulator
+
+The Test ACS server will return to a simulated issuer with the following actions:
+
+![]((https://github.com/paysafegroup/netbanx_3dsecure_rest_api_v1/raw/master/images/test_acs.PNG)
+
+## Test Card Numbers
+
+You can use the following test credit card numbers to test your integration.
+
+|Card Type          |Card Number        |3D Secure Enabled      |
+| ---               | ---               | ---                   |
+|Visa               |4530910000012345   | No                    |
+|                   |4510150000000321   | No                    |
+|                   |4107857757053670   | Yes                   |
+|Visa Debit         |4206720389883775   | Yes                   |
+|Visa (Electron)    |4917480000000008   | No                    |
+|                   |4917484589897107   | No                    |
+|MasterCard         |5191330000004415   | No                    |
+|                   |5457490000008763   | No                    |
+|                   |5186750368967720   | Yes                   |
+|MasterCard Debit (Maestro)|6759950000000162 | No               |
+|                   |5036150000001115   | No                    |
+|                   |5573560100022200   | Yes                   |
+|American Express   |370123456789017    | No                    |
+|                   |375529360131002    | No                    |
+|Discover           |6011234567890123   | No                    |
+|JCB                |3569990000000009   | No                    | 
+
+
+**Note:** You can use any of the card numbers to test the Card Payments API or the Hosted Payments API. If you want to test the 3D Secure API and then continue on with the resulting 3D Secure data to perform a test Purchase through the Card Payments API or Hosted Payments API, make sure you use a card number that is 3D Secure Enabled.
+
+### Expiry Date
+
+When using the test card numbers, you can use any date in the future for the expiry date (e.g., 11/18).
+
+<a name="3D Secure Results"></a>
+# 3D Secure Results
+
+**NOTE: THIS CONTENT WILL PROBABLY CHANGE BEFORE WE PUBLISH THIS API**
+
+When 3D Secure is used in conjunction with an authorization request using the Card Payments API – requiring that the consumer authenticates the card used in the transaction – a major advantage to the merchant is that the financial liability switches from the merchant to the card issuer for disputed payments of this type (known as a liability shift). Many factors can affect whether the liability shift occurs, so merchants should contact their account manager for advice. The following table provides a brief overview. The following table provides a brief overview, which can be used as a rough guideline:
+
+|threeDResult   |Description                    |Recommendation                     |Note|
+|---            |---                            |---                                |--- |
+|Y              |Passed authentication          |Proceed with authorization         |Cardholder passed authentication|
+|A              |Authentication attempted       |Proceed with authorization         |Proceed with authorization |
+|N              |Did not pass authentication    |Do not proceed with authorization  |Cardholder failed authentication |
+|U              |Authentication unavailable     |Decision to proceed with authorization at merchant's discretion    |No liability shift |
+|E              |Error                          |Do not proceed with authorization  |No liability shift |
+
+
+# ISO Standards
+
+<a name="CurrencyCodes"></a>
+## Currency Codes
+
+|Currency           |Code   |
+|---                |---    |
+|Argentine Peso     |ARS    |
+|Australian Dollar  |AUD    |
+|Baht               |THB    |
+|Brazilian Real     |BRL    |
+|Bulgarian Lev      |BGN    |
+|Canadian Dollar    |CAD    |
+|Czech Koruna       |CZK    |
+|Danish Krone       |DKK    |
+|Euro               |EUR    |
+|Forint             |HUF    |
+|Hong Kong Dollar   |HKD    |
+|Iceland Krona      |ISK    |
+|Japanese Yen       |JPY    |
+|Mexican Peso       |MXN    |
+|New Israeli Shekel |ILS    |
+|New Leu            |RON    |
+|New Taiwan Dollar  |TWD    |
+|New Zealand Dollar |NZD    |
+|Norwegian Krone    |NOK    |
+|Pound Sterling     |GBP    |
+|Rand               |ZAR    |
+|Singapore Dollar   |SGD    |
+|Swedish Krona      |SEK    |
+|Swiss Franc        |CHF    |
+|US Dollar          |USD    |
+|Zloty              |PLN    |
+
+
+
+
+# Complex JSON Objects
+
+<a name="enrollmentchecks"></a>
+## enrollmentchecks
+
+|Element                |Type                           |Description|
+|---                    |---                            |---       |
+|id                     |string<br/>`length<=36`        |This is the ID returned in the response. |
+|merchantRefNum         |string<br/>`length<=255`       |This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.|
+|amount                 |number<br>`max=99999999999`    |This is the amount of the request.<br/>**Note:** Although the *amount* element is mandatory for the Enrollment Lookup request, no amount is actually processed against the credit card.|
+|currency               |string                         |This is the currency of the merchant account, e.g., USD or CAD. See [Currency Codes](#CurrencyCodes)|
+|card                   |[card](#card)                  |These are the details of the card used.|
+|customerIp             |string<br>`length<=39`         |This is the customer's IP address.|
+|userAgent              |string<br>`length<=256`        |This is the User-Agent header from the customer's browser. For example:<br/>Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36|
+|acceptHeader           |string<br>`length<=2048`       |This is the Accept header from the customer's browser. For example:<br/>text/html,application/xhtml+xml,application/xml; q=0.9,image/webp,*/*;q=0.8|
+|merchantUrl            |string<br>`length<=2048`       |This is the fully qualified URL of the merchant's commercial or customer care website.|
+|txnTime                |UTC formatted date             |This is the date and time the request was processed. For example:<br/>2014-01-26T10:32:28Z|
+|error                  |[error](#error)                |       |
+|status                 |string                         |This is the status of the enrollment lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The enrollment lookup request failed. Check the error code for details.</li></ul>|
+|acsURL                 |string<br>`length<=255`        |This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction.<br/>**Note:** This value is available if the value for *threeDEnrollment* = Y.|
+|paReq                  |string<br>`length<=2048`       |This is the encoded Payment Authentication Request generated by the merchant authentication processing system (MAPS).<br/>**Note:** This value is available if the value for *threeDEnrollment* = Y.|
+|eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**MasterCard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul></br>**Note:** This value is available if the value for *threeDEnrollment* = N and the card scheme supports non-participating issuers.|
+|threeDEnrollment       |number                         |This indicates whether or not the cardholder is enrolled in 3D Secure. Possible values are:<br/><ul><li>Y &ndash; Cardholder authentication available</li><li>N &ndash; Cardholder not enrolled in authentication</li><li>U &ndash; Cardholder authentication unavailable</li></ul>|
+
+
+<a name="authentications"></a>
+## authentications
+
+|Element                |Type                           |Description|
+|---                    |---                            |---       |
+|id                     |string<br/>`length<=36`        |This is the ID returned in the response. |
+|merchantRefNum         |string<br/>`length<=255`       |This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.|
+|paRes                  |string<br/>`length<=65536`     |This is the Payment Authentication Response that is returned from the issuing bank via your customer’s Web browser once your customer has provided their authentication information. It is an encoded response generated by the Issuer ACS software. Its digital signature will be verified through NETBANX to ensure it was generated by a legitimate Issuer.<br/>**Note:** These responses can vary substantially in length depending on the card issuer.|
+|customerIp             |string<br>`length<=39`         |This is the customer's IP address.|
+|txnTime                |UTC formatted date             |This is the date and time the request was processed. For example:<br/>2014-01-26T10:32:28Z|
+|error                  |[error](#error)                |       |
+|status                 |string                         |This is the status of the enrollment lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The authentication request failed. Check the error code for details.</li></ul>|
+|threeDResult           |string                         |This indicates the outcome of the authentication.<br/><ul><li>Y &ndash; The cardholder successfully authenticated with their card issuer.</li><li>A &ndash; The cardholder authentication was attempted.</li><li>N &ndash; The cardholder failed to successfully authenticate with their card issuer.</li><li>U &ndash; Authentication with the card issuer was unavailable.</li><li>E &ndash; An error occurred during authentication.</li></ul><br/>See [3D Secure Results](#3D Secure Results) for more information on these authentication outcome values.|
+|signatureStatus        |string                         |This is the 3D Secure signature verification result value.<br/><ul><li>Y &ndash; All transaction and signature checks satisfied.</li><li>N &ndash; At least one transaction or signature check failed.</li></ul>|
+|eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**MasterCard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul></br>**Note:** This value is available if the value for *threeDEnrollment* = N and the card scheme supports non-participating issuers.|
+|cavv                   |string<br/>`length<=80`        |This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated. This value should be appended to the authorization request signifying that the transaction has been successfully authenticated.|
+|xid                    |string<br/>`length<=40`        |This is the transaction identifier returned by the card issuer.|
+
+<a name="card"></a>
+## card
+
+|Element                |Type                         |Required                 |Description|
+|---                    |---                          |---                      |---       |
+|cardNum                |string<br/>`length=8-20`     |                         |This is the card number. |
+|cardExpiry             |[cardExpiry](#cardExpiry)    |Required                 |This is the card expiry date.|
+|lastDigits             |string<br/>`length=4`        |                         |This is the last four digits of the card used for the request, returned in the response.|
+|type                   |string                       |                         |This is the type of card used for the request.|
+
+
+```apib
+{
+    "cardNum": "123456789321",
+    "cardExpiry": {
+        "month": "12",
+        "year": "2020"
+    }
+}
+```
+
+<a name="cardExpiry"></a>
+## cardExpiry
+
+|Element                 |Type                   |Required                  |Description|
+|---                     |---                    |---                       |---|
+|month                   |number<br/>`length=2`  |Required                  |This is the card expiry month. |
+|year                    |number<br/>`length=4`  |Required                  |This is the card expiry year.|
+
+```apib
+{
+    "month": "12",
+    "year": "2020"
+}
+```
+
+<a name="error"></a>
+## error
+
+|Element                |Type          |Description|
+|---                    |---           |---|
+|code                   |String        |This is the error code.|
+|message                |String        |This is a description of the error.|
+
+```apib
+{
+    "code": "1000",
+    "message": "An internal error occurred."
+}
+```
+
+
+# Error Summary
+
+## Common Errors
+|HTTP Status Code       |Error Code    |Description|
+|---                    |---           |---|
+|500                    |1000           |An internal error occurred.         |
+|502                    |1001           |An error occurred with the external processing gateway.|
+|500                    |1002           |An internal error occurred.            |
+|500                    |1003           |An internal error occurred.            |
+|500                    |1007           |An internal error occurred.            |
+|500                    |1008           |An internal error occurred.            |
+|429                    |1200           |The API call has been denied as it has exceeded the permissible call rate limit.|
+|401                    |5000           |Your merchant account authentication failed. Either your store ID/password are invalid or the IP address from which you are sending the transaction has not been authorized.|
+|400                    |5001           |The submitted currency code is invalid or your account does not support this currency.|
+|400                    |5003           |You submitted an invalid amount with your request.|
+|400                    |5004           |You submitted an invalid account type with your request.|
+|400                    |5005           |You submitted an invalid operation type with your request.|
+|400                    |5010           |The submitted country code is invalid.|
+|400                    |5016           |The merchant account you provided cannot be found.|
+|400                    |5017           |The merchant account you provided is disabled.|
+|402                    |5021           |Your transaction request has been declined.|
+|400                    |5023           |The request is not parseable.|
+|409                    |5031           |The transaction you have submitted has already been processed.|
+|401                    |5040           |Your merchant account is not configured for the transaction you attempted.|
+|400                    |5042           |The merchant reference number is missing or invalid or it exceeds the maximum permissible length.|
+|400                    |5068           |Either you submitted a request that is missing a mandatory field or the value of a field does not match the format expected.|
+|404                    |5269           |The ID(s) specified in the URL do not correspond to the values in the system.|
+|403                    |5270           |The credentials provided with the request do not have permission to access the requested data.|
+|406                    |5271           |You requested a response in the 'Accept' header that is in an unsupported format.|
+|406                    |5272           |The 'Content-Type' you specified in request header was submitted in an unsupported format.|
+|404                    |5273           |Your client reached our application but we were unable to service your request due to an invalid URL.|
+|401                    |5275           |The authentication credentials provided with the request have expired.|
+|401                    |5276           |The authentication credentials provided with the request provided have been disabled.|
+|401                    |5277           |The authentication credentials provided with the request have been locked due to multiple authentication failures.|
+|401                    |5278           |The authentication credentials provided with the request were not accepted for an unknown reason.|
+|401                    |5279           |The authentication credentials are invalid.|
+|401                    |5280           |The required authentication credentials were not provided.|
+|405                    |5281           |The request uses an action (e.g., GET, POST, or PUT) that is not supported by the resource.|
+|400                    |5502           |Either the payment token is invalid or the corresponding profile or bank account is not active.|
+
+## 3D Secure Errors
+If an error occurs during the 3D Secure processing at Visa, MasterCard, or the Issuer, this will not be reported directly to the merchant. Instead the 3D Secure process will continue as normally as possible. For example:
+  * If an error occurs within the directory server the *threeDEnrollment* field will indicate "U" and no ACS URL will be returned.
+  * If an error occurs during the authentication, a *PaRes* will be returned as normal, with the error indicated within, along with a *threeDResult* of "U".
+
+In the event of an error, it is up to the merchant whether they wish to proceed with the card authorization. Please see [3D Secure Results](#3D Secure Results) for more information. 
+
+
+# Enrollment Lookups [/enrollmentchecks]
+<a name="enrollmentlookup"></a>
+
+## Enrollment Lookup [POST /accounts/{ACCOUNT_ID}/enrollmentchecks]
+
+This is how you do an enrollment lookup. 
+
++ Parameters
+    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+
++ Request Enrollment Lookup (application/json)
+
+    + Attributes
+        + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
+        + amount (object, required) - This is the amount of the request, in minor units.
+        + currency (string, required) - This is the currency of the merchant account, e.g., USD. 
+        + card (object, required) - These are the details of the card used for the request.
+        + customerIp (string, required) - This is the customer's IP address.
+        + userAgent (string, required) - This is the User-Agent header from the customer's browser.
+        + acceptHeader (string, required) - This is the Accept header from the customer's browser.
+        + merchantUrl (string, required) - This is the fully qualified URL of the merchant's commercial or customer care website.
+
+    + Headers
+            
+            Authorization: Basic YOUR-BASE64-ENCODED-API-KEY
+
+    + Body
+
+            {
+            "merchantRefNum": "merchantABC-123-enrollmentchecks",
+            "amount": 5000,
+            "currency" : "USD",
+            "customerIp": "172.0.0.1",
+            "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
+            "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "merchantUrl": "https://www.merchant.com",
+            "card": {
+                "cardNum": "4111111111111111",
+                "cardExpiry": {
+                    "month": 10,
+                    "year": 2015
+                }
+            }
+            }
+
++ Response 200 (application/json)
+
+    + Attributes
+        + links ([string], required) - This is an array of self-referencing links
+        + id (string, required) -This is the ID returned in the response.
+        + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
+        + txnTime (string, required) - This is the date and time the request was processed.
+        + status (string, required) - This is the status of the enrollment lookup request. Possible values are COMPLETED or FAILED.
+        + amount (object, required) - Details about the payment.
+        + currency (string, required) - This is the currency of the merchant account, e.g., USD. 
+        + card (object, required) - These are the details of the card used for the request.
+        + customerIp (string, required) - This is the customer's IP address.
+        + acsURL (string, optional) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. This value is available only if the value for threeDEnrollment = Y.
+        + paReq (string, required)
+        + eci (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
+        + threeDEnrollment (string, required) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. Possible values are Y (cardholder authentication available), N (cardholder not enrolled), and U (cardholder authentication unavailable).
+        
+    + Body
+
+            {
+            "links": [
+                {
+                "rel": "self",
+                "href": "https://api.netbanx.com/threedsecure/v1/accounts/99000/enrollmentchecks/e067d83f-add7-4b6b-8884-dfa8693dde1f"
+                }
+            ],
+            "id": "e067d83f-add7-4b6b-8884-dfa8693dde1f",
+            "merchantRefNum": "merchantABC-123-enrollmentchecks",
+            "txnTime": "2014-04-09T17:59:55Z",
+            "status": "COMPLETED",
+            "amount": 5000,
+            "currency" : "USD",
+            "card": {
+                "type": "VI",
+                "lastDigits": "1111",
+                "cardExpiry": {
+                    "month": 1,
+                    "year": 2015
+                }
+            },
+            "customerIp": "127.0.0.1",
+            "acsURL": "https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B",
+            "paReq": "eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==",
+            "threeDEnrollment": "Y"
+            }
+            
+## Get Enrollment Lookup [GET /accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}]
+
+This is how you look up an enrollment lookup. 
+
++ Parameters
+    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+    + ENROLLMENTCHECK_ID:e067d83f-add7-4b6b-8884-dfa8693dde1f (string, required) - This is the enrollment lookup ID.
+
++ Request Get Enrollment Lookup (application/json)
+
+    + Parameters
+        + id (required, string) - This is the enrollment lookup ID.
+
+    + Headers
+            
+            Authorization: Basic YOUR-BASE64-ENCODED-API-KEY
+
+            
++ Response 200 (application/json)
+
+    + Attributes
+        + links ([string], required) - This is an array of self-referencing links
+        + id (string, required) -This is the ID returned in the response.
+        + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
+        + txnTime (string, required) - This is the date and time the request was processed.
+        + status (string, required) - This is the status of the enrollment lookup request. Possible values are COMPLETED or FAILED.
+        + amount (object, required) - Details about the payment.
+        + currency (string, required) - This is the currency of the merchant account, e.g., USD. 
+        + card (object, required) - These are the details of the card used for the request.
+        + customerIp (string, required) - This is the customer's IP address.
+        + acsURL (string, optional) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. This value is available only if the value for threeDEnrollment = Y.
+        + paReq (string, required)
+        + threeDEnrollment (string, required) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. Possible values are Y (cardholder authentication available), N (cardholder not enrolled), and U (cardholder authentication unavailable).
+        
+    + Body
+
+            {
+            "links": [
+                {
+                "rel": "self",
+                "href": "https://api.netbanx.com/threedsecure/v1/accounts/99000/enrollmentchecks/e067d83f-add7-4b6b-8884-dfa8693dde1f"
+                }
+            ],
+            "id": "e067d83f-add7-4b6b-8884-dfa8693dde1f",
+            "merchantRefNum": "merchantABC-123-enrollmentchecks",
+            "txnTime": "2014-04-09T17:59:55Z",
+            "status": "COMPLETED",
+            "amount": 5000,
+            "currency" : "USD",
+            "card": {
+                "type": "VI",
+                "lastDigits": "1111",
+                "cardExpiry": {
+                    "month": 1,
+                    "year": 2015
+                }
+            },
+            "customerIp": "127.0.0.1",
+            "acsURL": "https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B",
+            "paReq": "eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==",
+            "threeDEnrollment": "Y"
+            }          
+
+# Authentications [/authentications]
+<a name="authenticationrequest"></a>
+
+## Authentications [POST /accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}/authentications]
+
+This is how you submit an Authentications request that allows a cardholder to authenticate their card at the issuer and to retrieve the values required for the authentication element of an Authorization request.
+
++ Parameters
+    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+    + ENROLLMENTCHECK_ID:e067d83f-add7-4b6b-8884-dfa8693dde1f (string, required) - This is the enrollment lookup ID.
+
++ Request Authentication (application/json)
+
+    + Attributes
+        + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
+        + paRes (object, required) - This is the Payment Authentication Response that is returned from the issuing bank via your customer’s Web browser once your customer has provided their authentication information. </BR> It is an encoded response generated by the Issuer ACS software. Its digital signature will be verified through NETBANX to ensure it was generated by a legitimate Issuer.
+
+    + Headers
+            
+            Authorization: Basic YOUR-BASE64-ENCODED-API-KEY
+            
+    + Body
+
+            {
+                "merchantRefNum": "merchantABC-123-authentications",
+                "paRes": "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"
+            }            
+            
++ Response 200 (application/json)
+
+    + Attributes
+        + links ([string], required) - This is an array of self-referencing links
+        + id (string, required) -This is the ID returned in the response.
+        + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
+        + txnTime (string, required) - This is the date and time the request was processed.
+        + status (string, required) - This is the status of the authentications request. Possible values are COMPLETED or FAILED.
+        + threeDResult (string, required) - This indicates the outcome of the authentication.
+        + signatureStatus (string, required) - This is the 3D Secure signature verification result value.
+        + eci (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
+        + cavv (string, required) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
+        + xid (number, optional) - This is the transaction identifier returned by the card issuer.
+
+        
+    + Body
+
+            {
+                "links": [
+                    {
+                        "rel": "self",
+                        "href": "https://api.netbanx.com/threedsecure/v1/accounts/99000/authentications/5d4db3bc-34c9-417f-a051-0d992ad9284e"
+                    }
+                ],
+                "id": "5d4db3bc-34c9-417f-a051-0d992ad9284e",
+                "merchantRefNum": "merchantABC-123-authentications",
+                "txnTime": "2014-04-09T17:59:55Z",
+                "status": "COMPLETED",
+                "threeDResult": "Y",
+                "signatureStatus": "Y",
+                "eci": 5,
+                "cavv": "AAABBhkXYgAAAAACBxdiENhf7A+=",
+                "xid": "aWg4N1ZZOE53TkFrazJuMmkyRDA="
+            }   
+            
+## Get Authentication [GET /accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}]
+
+This is how you look up an authentication. 
+
++ Parameters
+    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+    + AUTHENTICATION_ID:5d4db3bc-34c9-417f-a051-0d992ad9284e (string, required) - This is the authentications ID.
+
++ Request Get Authentication (application/json)
+
+    + Parameters
+        + id (required, string) - This is the authentications ID.
+
+    + Headers
+            
+            Authorization: Basic YOUR-BASE64-ENCODED-API-KEY
+
+            
++ Response 200 (application/json)
+
+    + Attributes
+        + links ([string], required) - This is an array of self-referencing links
+        + id (string, required) -This is the ID returned in the response.
+        + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
+        + txnTime (string, required) - This is the date and time the request was processed.
+        + status (string, required) - This is the status of the authentications request. Possible values are COMPLETED or FAILED.
+        + threeDResult (string, required) - This indicates the outcome of the authentication.
+        + signatureStatus (string, required) - This is the 3D Secure signature verification result value.
+        + eci (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
+        + cavv (string, required) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
+        + xid (number, optional) - This is the transaction identifier returned by the card issuer.
+
+        
+    + Body
+
+            {
+                "links": [
+                    {
+                        "rel": "self",
+                        "href": "https://api.netbanx.com/threedsecure/v1/accounts/99000/authentications/5d4db3bc-34c9-417f-a051-0d992ad9284e"
+                    }
+                ],
+                "id": "5d4db3bc-34c9-417f-a051-0d992ad9284e",
+                "merchantRefNum": "merchantABC-123-authentications",
+                "txnTime": "2014-04-09T17:59:55Z",
+                "status": "COMPLETED",
+                "threeDResult": "Y",
+                "signatureStatus": "Y",
+                "eci": 5,
+                "cavv": "AAABBhkXYgAAAAACBxdiENhf7A+=",
+                "xid": "aWg4N1ZZOE53TkFrazJuMmkyRDA="
+            }              
+
+            
+# Data Structures
+
+## card
+- type (string) - This is the type of card used for the request.
+- cardnum (string) - This is the card number used for the request.
+- lastDigits (string) - This is the last four digits of the card used for the request, returned in the response.   
+- cardExpiry (object) - This is the [card expiry](#cardExpiry) date.
+
+
+## cardExpiry
+- month:11 (string) - This is the month the card expires.
+- year:2019 (string) - This is the year the card expires.
+
+## error
+- code (string) - This is the error code.
+- message (string) - This is the error description.
