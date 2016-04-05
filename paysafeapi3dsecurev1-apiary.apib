@@ -1,7 +1,7 @@
 FORMAT: 1A
 HOST: https://api.netbanx.com/threedsecure/v1/
 
-# NETBANXT 3DSecure API
+# NETBANX 3D Secure API
 
 # Overview 
 
@@ -11,7 +11,7 @@ The basic concept of the protocol is to tie the financial authorization process 
 
 1. The merchant submits an Enrollment Lookup request on the cardholder PAN (credit card) to the enrollmentchecks endpoint. This will initiate a lookup to identify whether the card is registered for 3D Secure. 
 
-2. The NETBANX 3D Secure API submits an enrollment lookup to the appropriate Visa or MasterCard directory server. 
+2. The NETBANX 3D Secure API submits an Enrollment Lookup to the appropriate Visa or MasterCard directory server. 
 
  **Note:** If the call to the directory server does not return within 10 seconds, a call is made to the secondary directory server.
 
@@ -31,7 +31,7 @@ The basic concept of the protocol is to tie the financial authorization process 
 
 10. Assuming these details are passed into the Card Payments API correctly and the card is 3D Secure authorized, fraud liability is shifted from the merchant to the bank.
 
-![](https://github.com/paysafegroup/netbanx_3dsecure_rest_api_v1/raw/master/images/3DAPIOverview_2.png
+![](https://github.com/paysafegroup/paysafe_api_3dsecure_v1/raw/master/images/3DAPIOverview_2.png)
 
 # Authentication
 
@@ -95,7 +95,7 @@ The following request types are supported:
 |Endpoint URL                                       |Description                                        |Action |
 |---                                                |---                                                |---    |
 |/enrollmentchecks                                  |Verify whether a card is enrolled in 3D Secure     |POST   |
-|enrollmentchecks/{ENROLLMENT_ID}                   |Look up an enrollment response                     |GET    |
+|/enrollmentchecks/{ENROLLMENT_ID}                  |Look up an enrollment response                     |GET    |
 |/enrollmentchecks/{ENROLLMENT_ID}/authentications  |Authenticate a card with 3D Secure                 |POST   |
 |/authentications/{AUTHENTICATION_ID}               |Look up an authentication request                  |GET    |
 
@@ -122,7 +122,7 @@ The following request verifies that the service is up and accessible from your n
 
 ## Perform an Enrollment Lookup
 
-To perform a 3D Secure enrollment lookup, you must initiate a POST request to the *enrollmentchecks* endpoint. This will perform a lookup on the card number and tell you if 3D Secure is available for the transaction you are trying to process. If 3D Secure is available, this call will return the information you need to proceed to the next step in the process.
+To perform a 3D Secure Enrollment Lookup, you must initiate a POST request to the *enrollmentchecks* endpoint. This will perform a lookup on the card number and tell you if 3D Secure is available for the transaction you are trying to process. If 3D Secure is available, this call will return the information you need to proceed to the next step in the process.
 
     curl -X POST https://api.test.netbanx.com/threedsecure/v1/accounts/89987201/enrollmentchecks \
     -u devcentre322:B-qa2-0-53625f86-302c021476f52bdc9deab7aea876bb28762e62f92fc671e2d0214736abf501e9675e55940e83ef77f5c304edc7968 \
@@ -268,7 +268,7 @@ https://api.test.netbanx.com/threedsecure/v1/accounts/{test_account_number}
 
 The Test ACS server will return to a simulated issuer with the following actions:
 
-![]((https://github.com/paysafegroup/netbanx_3dsecure_rest_api_v1/raw/master/images/test_acs.PNG)
+![](https://github.com/paysafegroup/paysafe_api_3dsecure_v1/raw/master/images/test_acs.PNG)
 
 ## Test Card Numbers
 
@@ -355,7 +355,7 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 
 # Complex JSON Objects
 
-<a name="enrollmentchecks"></a>
+<a name="enrollmentchecksobject"></a>
 ## enrollmentchecks
 
 |Element                |Type                           |Description|
@@ -364,21 +364,39 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 |merchantRefNum         |string<br/>`length<=255`       |This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.|
 |amount                 |number<br>`max=99999999999`    |This is the amount of the request.<br/>**Note:** Although the *amount* element is mandatory for the Enrollment Lookup request, no amount is actually processed against the credit card.|
 |currency               |string                         |This is the currency of the merchant account, e.g., USD or CAD. See [Currency Codes](#CurrencyCodes)|
-|card                   |[card](#card)                  |These are the details of the card used.|
+|card                   |[card](#cardobject)            |These are the details of the card used.|
 |customerIp             |string<br>`length<=39`         |This is the customer's IP address.|
 |userAgent              |string<br>`length<=256`        |This is the User-Agent header from the customer's browser. For example:<br/>Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36|
 |acceptHeader           |string<br>`length<=2048`       |This is the Accept header from the customer's browser. For example:<br/>text/html,application/xhtml+xml,application/xml; q=0.9,image/webp,*/*;q=0.8|
 |merchantUrl            |string<br>`length<=2048`       |This is the fully qualified URL of the merchant's commercial or customer care website.|
 |txnTime                |UTC formatted date             |This is the date and time the request was processed. For example:<br/>2014-01-26T10:32:28Z|
 |error                  |[error](#error)                |       |
-|status                 |string                         |This is the status of the enrollment lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The enrollment lookup request failed. Check the error code for details.</li></ul>|
+|status                 |enum                           |This is the status of the enrollment lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The enrollment lookup request failed. Check the error code for details.</li></ul>|
 |acsURL                 |string<br>`length<=255`        |This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction.<br/>**Note:** This value is available if the value for *threeDEnrollment* = Y.|
 |paReq                  |string<br>`length<=2048`       |This is the encoded Payment Authentication Request generated by the merchant authentication processing system (MAPS).<br/>**Note:** This value is available if the value for *threeDEnrollment* = Y.|
 |eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**MasterCard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul></br>**Note:** This value is available if the value for *threeDEnrollment* = N and the card scheme supports non-participating issuers.|
-|threeDEnrollment       |number                         |This indicates whether or not the cardholder is enrolled in 3D Secure. Possible values are:<br/><ul><li>Y &ndash; Cardholder authentication available</li><li>N &ndash; Cardholder not enrolled in authentication</li><li>U &ndash; Cardholder authentication unavailable</li></ul>|
+|threeDEnrollment       |enum                           |This indicates whether or not the cardholder is enrolled in 3D Secure. Possible values are:<br/><ul><li>Y &ndash; Cardholder authentication available</li><li>N &ndash; Cardholder not enrolled in authentication</li><li>U &ndash; Cardholder authentication unavailable</li></ul>|
 
+```apib
+{
+    "merchantRefNum": "merchantABC-123-enrollmentchecks",
+    "amount": 5000,
+    "currency" : "USD",
+    "customerIp": "172.0.0.1",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
+    "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "merchantUrl": "https://www.merchant.com",
+    "card": {
+        "cardNum": "4111111111111111",
+        "cardExpiry": {
+            "month": 10,
+            "year": 2015
+        }
+    }
+}
+```
 
-<a name="authentications"></a>
+<a name="authenticationsobject"></a>
 ## authentications
 
 |Element                |Type                           |Description|
@@ -388,15 +406,23 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 |paRes                  |string<br/>`length<=65536`     |This is the Payment Authentication Response that is returned from the issuing bank via your customer’s Web browser once your customer has provided their authentication information. It is an encoded response generated by the Issuer ACS software. Its digital signature will be verified through NETBANX to ensure it was generated by a legitimate Issuer.<br/>**Note:** These responses can vary substantially in length depending on the card issuer.|
 |customerIp             |string<br>`length<=39`         |This is the customer's IP address.|
 |txnTime                |UTC formatted date             |This is the date and time the request was processed. For example:<br/>2014-01-26T10:32:28Z|
-|error                  |[error](#error)                |       |
-|status                 |string                         |This is the status of the enrollment lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The authentication request failed. Check the error code for details.</li></ul>|
-|threeDResult           |string                         |This indicates the outcome of the authentication.<br/><ul><li>Y &ndash; The cardholder successfully authenticated with their card issuer.</li><li>A &ndash; The cardholder authentication was attempted.</li><li>N &ndash; The cardholder failed to successfully authenticate with their card issuer.</li><li>U &ndash; Authentication with the card issuer was unavailable.</li><li>E &ndash; An error occurred during authentication.</li></ul><br/>See [3D Secure Results](#3D Secure Results) for more information on these authentication outcome values.|
-|signatureStatus        |string                         |This is the 3D Secure signature verification result value.<br/><ul><li>Y &ndash; All transaction and signature checks satisfied.</li><li>N &ndash; At least one transaction or signature check failed.</li></ul>|
+|error                  |[error](#errorobject)          |       |
+|status                 |enum                           |This is the status of the enrollment lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The authentication request failed. Check the error code for details.</li></ul>|
+|threeDResult           |enum                           |This indicates the outcome of the authentication.<br/><ul><li>Y &ndash; The cardholder successfully authenticated with their card issuer.</li><li>A &ndash; The cardholder authentication was attempted.</li><li>N &ndash; The cardholder failed to successfully authenticate with their card issuer.</li><li>U &ndash; Authentication with the card issuer was unavailable.</li><li>E &ndash; An error occurred during authentication.</li></ul><br/>See [3D Secure Results](#3D Secure Results) for more information on these authentication outcome values.|
+|signatureStatus        |enum                           |This is the 3D Secure signature verification result value.<br/><ul><li>Y &ndash; All transaction and signature checks satisfied.</li><li>N &ndash; At least one transaction or signature check failed.</li></ul>|
 |eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**MasterCard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul></br>**Note:** This value is available if the value for *threeDEnrollment* = N and the card scheme supports non-participating issuers.|
 |cavv                   |string<br/>`length<=80`        |This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated. This value should be appended to the authorization request signifying that the transaction has been successfully authenticated.|
 |xid                    |string<br/>`length<=40`        |This is the transaction identifier returned by the card issuer.|
 
-<a name="card"></a>
+```apib
+{
+    "merchantRefNum": "merchantABC-123-authentications",
+    "paRes": "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"
+}
+```
+
+
+<a name="cardobject"></a>
 ## card
 
 |Element                |Type                         |Required                 |Description|
@@ -417,7 +443,7 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 }
 ```
 
-<a name="cardExpiry"></a>
+<a name="cardExpiryobject"></a>
 ## cardExpiry
 
 |Element                 |Type                   |Required                  |Description|
@@ -432,7 +458,7 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 }
 ```
 
-<a name="error"></a>
+<a name="errorobject"></a>
 ## error
 
 |Element                |Type          |Description|
@@ -451,8 +477,8 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 # Error Summary
 
 ## Common Errors
-|HTTP Status Code       |Error Code    |Description|
-|---                    |---           |---|
+|HTTP Status Code       |Error Code     |Description|
+|---                    |---            |---|
 |500                    |1000           |An internal error occurred.         |
 |502                    |1001           |An error occurred with the external processing gateway.|
 |500                    |1002           |An internal error occurred.            |
@@ -501,16 +527,28 @@ In the event of an error, it is up to the merchant whether they wish to proceed 
 
 ## Enrollment Lookup [POST /accounts/{ACCOUNT_ID}/enrollmentchecks]
 
-This is how you do an enrollment lookup. 
+This is how you do an Enrollment Lookup. 
 
-+ Parameters
-    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+The following list describes the mandatory parameters for processing an Enrollment Lookup request. For a detailed description of the attributes, please refer to the [enrollmentchecks object](#enrollmentchecksobject).
+
+**Required Parameters**
+* merchantRefNum
+* amount
+* currency
+* card
+* customerIp
+* userAgent
+* acceptHeader
+* merchantUrl
 
 + Request Enrollment Lookup (application/json)
 
+    + Parameters
+        + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+
     + Attributes
         + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
-        + amount (object, required) - This is the amount of the request, in minor units.
+        + amount (number, required) - This is the amount of the request, in minor units.
         + currency (string, required) - This is the currency of the merchant account, e.g., USD. 
         + card (object, required) - These are the details of the card used for the request.
         + customerIp (string, required) - This is the customer's IP address.
@@ -544,11 +582,11 @@ This is how you do an enrollment lookup.
 + Response 200 (application/json)
 
     + Attributes
-        + links ([string], required) - This is an array of self-referencing links
+        + links ([string], required) - This is an array of self-referencing links.
         + id (string, required) -This is the ID returned in the response.
         + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
         + txnTime (string, required) - This is the date and time the request was processed.
-        + status (string, required) - This is the status of the enrollment lookup request. Possible values are COMPLETED or FAILED.
+        + status (enum, required) - This is the status of the enrollment lookup request. Possible values are COMPLETED or FAILED.
         + amount (object, required) - Details about the payment.
         + currency (string, required) - This is the currency of the merchant account, e.g., USD. 
         + card (object, required) - These are the details of the card used for the request.
@@ -556,7 +594,7 @@ This is how you do an enrollment lookup.
         + acsURL (string, optional) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq (string, required)
         + eci (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
-        + threeDEnrollment (string, required) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. Possible values are Y (cardholder authentication available), N (cardholder not enrolled), and U (cardholder authentication unavailable).
+        + threeDEnrollment (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. Possible values are Y (cardholder authentication available), N (cardholder not enrolled), and U (cardholder authentication unavailable).
         
     + Body
 
@@ -612,14 +650,14 @@ This is how you look up an enrollment lookup.
         + id (string, required) -This is the ID returned in the response.
         + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
         + txnTime (string, required) - This is the date and time the request was processed.
-        + status (string, required) - This is the status of the enrollment lookup request. Possible values are COMPLETED or FAILED.
+        + status (enum, required) - This is the status of the enrollment lookup request. Possible values are COMPLETED or FAILED.
         + amount (object, required) - Details about the payment.
         + currency (string, required) - This is the currency of the merchant account, e.g., USD. 
         + card (object, required) - These are the details of the card used for the request.
         + customerIp (string, required) - This is the customer's IP address.
         + acsURL (string, optional) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq (string, required)
-        + threeDEnrollment (string, required) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. Possible values are Y (cardholder authentication available), N (cardholder not enrolled), and U (cardholder authentication unavailable).
+        + threeDEnrollment (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. Possible values are Y (cardholder authentication available), N (cardholder not enrolled), and U (cardholder authentication unavailable).
         
     + Body
 
@@ -657,6 +695,12 @@ This is how you look up an enrollment lookup.
 
 This is how you submit an Authentications request that allows a cardholder to authenticate their card at the issuer and to retrieve the values required for the authentication element of an Authorization request.
 
+The following list describes the mandatory parameters for processing an Authentications request. For a detailed description of the attributes, please refer to the [authentications object](#authenticationsobject).
+
+Required Parameters
+* merchantRefNum
+* paRes
+
 + Parameters
     + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
     + ENROLLMENTCHECK_ID:e067d83f-add7-4b6b-8884-dfa8693dde1f (string, required) - This is the enrollment lookup ID.
@@ -685,9 +729,9 @@ This is how you submit an Authentications request that allows a cardholder to au
         + id (string, required) -This is the ID returned in the response.
         + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
         + txnTime (string, required) - This is the date and time the request was processed.
-        + status (string, required) - This is the status of the authentications request. Possible values are COMPLETED or FAILED.
-        + threeDResult (string, required) - This indicates the outcome of the authentication.
-        + signatureStatus (string, required) - This is the 3D Secure signature verification result value.
+        + status (enum, required) - This is the status of the Authentications request. Possible values are COMPLETED or FAILED.
+        + threeDResult (enum, required) - This indicates the outcome of the authentication.
+        + signatureStatus (enum, required) - This is the 3D Secure signature verification result value.
         + eci (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
         + cavv (string, required) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
         + xid (number, optional) - This is the transaction identifier returned by the card issuer.
@@ -715,7 +759,7 @@ This is how you submit an Authentications request that allows a cardholder to au
             
 ## Get Authentication [GET /accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}]
 
-This is how you look up an authentication. 
+This is how you look up an Authentication. 
 
 + Parameters
     + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
@@ -738,9 +782,9 @@ This is how you look up an authentication.
         + id (string, required) -This is the ID returned in the response.
         + merchantRefNum (string, required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
         + txnTime (string, required) - This is the date and time the request was processed.
-        + status (string, required) - This is the status of the authentications request. Possible values are COMPLETED or FAILED.
-        + threeDResult (string, required) - This indicates the outcome of the authentication.
-        + signatureStatus (string, required) - This is the 3D Secure signature verification result value.
+        + status (enum, required) - This is the status of the Authentications request. Possible values are COMPLETED or FAILED.
+        + threeDResult (enum, required) - This indicates the outcome of the authentication.
+        + signatureStatus (enum, required) - This is the 3D Secure signature verification result value.
         + eci (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
         + cavv (string, required) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
         + xid (number, optional) - This is the transaction identifier returned by the card issuer.
