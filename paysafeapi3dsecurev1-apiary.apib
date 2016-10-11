@@ -33,6 +33,7 @@ The basic concept of the protocol is to tie the financial authorization process 
 
 ![](https://github.com/paysafegroup/paysafe_api_3dsecure_v1/raw/master/images/3DAPIOverview_2.png)
 
+<a name="apikey"></a>
 # Authentication
 
 In order for you to use the Paysafe REST API, Paysafe must first set you up on their system and provide you with an API key. Your API key looks something like this:
@@ -151,7 +152,7 @@ Prior to trying the example, you should:
 
  * Provide a unique merchant reference number for each transaction.
  * Replace the account number (89987201) in the URL with the test account number you received.
- * Replace the API key (after the -u) with the API key you have received.
+ * Replace the [API key](#apikey) (after the -u) with the API key you have received.
   
 For a card that is enrolled in 3D Secure, a response with the following structure will be returned.
 
