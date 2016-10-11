@@ -432,7 +432,7 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 |card                   |[card](#cardobject)            |These are the details of the card used.|
 |customerIp             |string<br>`length<=39`         |This is the customer's IP address.|
 |userAgent              |string<br>`length<=256`        |This is the User-Agent header from the customer's browser. For example:<br/>Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36|
-|acceptHeader           |string<br>`length<=2048`       |This is the Accept header from the customer's browser. For example:<br/>text/html,application/xhtml+xml,application/xml; q=0.9,image/webp,*/*;q=0.8|
+|acceptHeader           |string<br>`length<=2048`       |This is the Accept header from the customer's browser. For example:<br/>text/html,application/xhtml+xml,application/xml; q=0.9,image/webp,/;q=0.8|
 |merchantUrl            |string<br>`length<=2048`       |This is the fully qualified URL of the merchant's commercial or customer care website.|
 |txnTime                |UTC formatted date             |This is the date and time the request was processed. For example:<br/>2014-01-26T10:32:28Z|
 |error                  |[error](#errorobject)          |       |
