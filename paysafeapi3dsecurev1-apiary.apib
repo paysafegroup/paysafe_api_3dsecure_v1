@@ -3,6 +3,12 @@ HOST: https://api.test.paysafe.com/threedsecure/v1/
 
 # Paysafe 3D Secure API
 
+# Release Notes
+
+| Version   | Date          | Details |
+|---        |---            |---      |
+| 1.0       | November 2016 | <ul><li>Document release</li></ul>|
+
 # Overview 
 
 A transaction using Verified by Visa or MasterCard SecureCode will initiate a redirection to the website of the card issuing bank to authorize the transaction. Each issuing bank could use any kind of authentication method (the protocol does not cover this) but typically, a password-based method is used. So to effectively buy on the Internet means using a password tied to the card. The Verified by Visa protocol recommends the bank's verification page to load in an [inline frame](http://en.wikipedia.org/wiki/HTML_element#Frames) session. In this way, the bank's systems can be held responsible for most security breaches.
@@ -79,6 +85,22 @@ In order to process live requests with Paysafe, use the following Production URL
 For example:
 
 ``https://api.paysafe.com/threedsecure/v1/accounts/{ACCOUNT_ID}``
+
+# Global Invalid Characters
+
+You must not include any of the characters in the following table as values in any of your request parameters. If you do, your request will result in an error.
+
+|    Character    |    HEX    |    Description                     |
+|-----------------|-----------|------------------------------------|
+| "               | 22        | Double quotes (or speech marks)    |
+| ;               | 3B        | Semicolon                          |
+| ^               | 5E        | Caret, circumflex                  |
+| *               | 2A        | Asterisk                           |
+| <               | 3C        | Less than (or open angled bracket) |
+| /               | 2F        | Slash or divide                    |
+| [               | 5B        | Opening bracket                    |
+| ]               | 5D        | Closing bracket                    |
+| \               | 5C        | Backslash                          |
 
 # API
 
@@ -310,7 +332,7 @@ When using the test card numbers, you can use any date in the future for the exp
 
 **NOTE: THIS CONTENT WILL PROBABLY CHANGE BEFORE WE PUBLISH THIS API**
 
-When 3D Secure is used in conjunction with an authorization request using the Card Payments API – requiring that the consumer authenticates the card used in the transaction – a major advantage to the merchant is that the financial liability switches from the merchant to the card issuer for disputed payments of this type (known as a liability shift). Many factors can affect whether the liability shift occurs, so merchants should contact their account manager for advice. The following table provides a brief overview. The following table provides a brief overview, which can be used as a rough guideline:
+When 3D Secure is used in conjunction with an authorization request using the Card Payments API – requiring that the customer authenticates the card used in the transaction – a major advantage to the merchant is that the financial liability switches from the merchant to the card issuer for disputed payments of this type (known as a liability shift). Many factors can affect whether the liability shift occurs, so merchants should contact their account manager for advice. The following table provides a brief overview. The following table provides a brief overview, which can be used as a rough guideline:
 
 |threeDResult   |Description                    |Recommendation                     |Note|
 |---            |---                            |---                                |--- |
@@ -427,7 +449,7 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 |---                    |---                            |---       |
 |id                     |string<br/>`length<=36`        |This is the ID returned in the response. |
 |merchantRefNum         |string<br/>`length<=255`       |This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.|
-|amount                 |number<br>`max=99999999999`    |This is the amount of the request. For example, US $10.99 would be 1099.<br/>**Note:** Although the *amount* element is mandatory for the Enrollment Lookup request, no amount is actually processed against the credit card.|
+|amount                 |number<br/>`max=99999999999`   |This is the amount of the request. For example, US $10.99 would be 1099.<br/>**Note:** Although the *amount* element is mandatory for the Enrollment Lookup request, no amount is actually processed against the credit card.|
 |currency               |string                         |This is the currency of the merchant account, e.g., USD or CAD. See [Currency Codes](#CurrencyCodes)|
 |card                   |[card](#cardobject)            |These are the details of the card used.|
 |customerIp             |string<br>`length<=39`         |This is the customer's IP address.|
@@ -437,7 +459,7 @@ When 3D Secure is used in conjunction with an authorization request using the Ca
 |txnTime                |UTC formatted date             |This is the date and time the request was processed. For example:<br/>2014-01-26T10:32:28Z|
 |error                  |[error](#errorobject)          |       |
 |status                 |enum                           |This is the status of the Enrollment Lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The enrollment lookup request failed. Check the error code for details.</li></ul>|
-|acsURL                 |string<br>`length<=255`        |This is the fully qualified URL to redirect the consumer to complete the payer Authentication transaction.<br/>**Note:** This value is available if the value for *threeDEnrollment* = Y.|
+|acsURL                 |string<br>`length<=255`        |This is the fully qualified URL to redirect the customer to complete the payer Authentication transaction.<br/>**Note:** This value is available if the value for *threeDEnrollment* = Y.|
 |paReq                  |string<br>`length<=2048`       |This is the encoded Payment Authentication Request generated by the merchant authentication processing system (MAPS).<br/>**Note:** This value is available if the value for *threeDEnrollment* = Y.|
 |eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer Authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer Authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**MasterCard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul></br>**Note:** This value is available if the value for *threeDEnrollment* = N and the card scheme supports non-participating issuers.|
 |threeDEnrollment       |enum                           |This indicates whether or not the cardholder is enrolled in 3D Secure. Possible values are:<br/><ul><li>Y &ndash; Cardholder authentication available</li><li>N &ndash; Cardholder not enrolled in authentication</li><li>U &ndash; Cardholder authentication unavailable</li></ul>|
@@ -674,7 +696,7 @@ This is how you do an Enrollment Lookup.
         + currency:USD (string, required) - This is the currency of the merchant account.
         + card (object, required) - These are the details of the card used for the request.
         + customerIp:127.0.0.1 (string, required) - This is the customer's IP address.
-        + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the consumer to complete the payer Authentication transaction. This value is available only if the value for threeDEnrollment = Y.
+        + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the customer to complete the payer Authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string, required)
         + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
         + threeDEnrollment:Y (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. 
@@ -765,7 +787,7 @@ This is how you do an Enrollment Lookup using a payment token.
         + currency:USD (string, required) - This is the currency of the merchant account.
         + card (object, required) - These are the details of the card used for the request.
         + customerIp:127.0.0.1 (string, required) - This is the customer's IP address.
-        + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the consumer to complete the payer Authentication transaction. This value is available only if the value for threeDEnrollment = Y.
+        + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the customer to complete the payer Authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string, required)
         + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
         + threeDEnrollment:Y (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. 
@@ -837,7 +859,7 @@ This is how you look up an Enrollment Lookup.
         + currency:USD (string, required) - This is the currency of the merchant account.
         + card (object, required) - These are the details of the card used for the request.
         + customerIp:127.0.0.1 (string, required) - This is the customer's IP address.
-        + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the consumer to complete the payer authentication transaction. This value is available only if the value for threeDEnrollment = Y.
+        + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the customer to complete the payer authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string, required)
         + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
         + threeDEnrollment:Y (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. 
