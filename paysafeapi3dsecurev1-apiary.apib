@@ -130,219 +130,15 @@ The following request types are supported:
 
 # Getting Started
 
-You can use the 3D Secure REST APIs to verify whether a credit card is enrolled for the 3D Secure service, and then, if it is, to authenticate that credit card when it is being used for an online purchase request. This enables you to process transactions through the Card Payments API that are fully 3D Secure. 
-
-## Verify That the 3D Secure Service Is Available
-
-The following request verifies that the service is up and accessible from your network.
-
-``curl -X GET https://api.test.paysafe.com/threedsecure/monitor``
-
-**Response**
-
-``{
-            "status" : "READY"
-            }
-``
-
-**Note:** The system should respond with a status of READY if it is available.
-
-## Perform an Enrollment Lookup
-
-To perform a 3D Secure Enrollment Lookup, you must initiate a POST request to the *enrollmentchecks* endpoint. This will perform a lookup on the card number and tell you if 3D Secure is available for the transaction you are trying to process. If 3D Secure is available, this call will return the information you need to proceed to the next step in the process.
-
-    curl -X POST https://api.test.paysafe.com/threedsecure/v1/accounts/89987201/enrollmentchecks \
-    -u devcentre322:B-qa2-0-53625f86-302c021476f52bdc9deab7aea876bb28762e62f92fc671e2d0214736abf501e9675e55940e83ef77f5c304edc7968 \
-    -H 'Content-type: application/json' \
-    -d '{        "merchantRefNum": "merchantABC-123-enrollmentchecks",
-        "amount": 5000,
-        "currency" : "USD",
-        "customerIp": "172.0.0.1",
-        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
-        "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "merchantUrl": "https://www.merchant.com",
-        "card": {
-            "cardNum": "4206720814705635",
-            "cardExpiry": {
-                "month": 2,
-                "year": 2020
-            }
-        }
-    }'
-
-You should obtain the userAgent and acceptHeader from the cardholder's browser headers upon the submission of the payment request and pass them through with the Enrollment Lookup.
-
-Prior to trying the example, you should:
-
- * Provide a unique merchant reference number for each transaction.
- * Replace the account number (89987201) in the URL with the test account number you received.
- * Ensure that the currency of the lookup is the same as the currency of your account.
- * Replace the [API key](#apikey) (after the -u) with the API key you have received.
-  
-For a card that is enrolled in 3D Secure, a response with the following structure will be returned.
-
-    {
-    "acsURL": "https://vbv.issueracs.com/3ds/acsendpoint?foo=bar",
-    "txnTime": "2014-12-11T12:21:33Z",
-    "customerIp": "127.0.0.1",
-    "status": "COMPLETED",
-    "threeDEnrollment": "Y",
-    "merchantRefNum": "merchantABC-123-enrollmentchecks",
-    "currency": "USD",
-    "amount": 5000,
-    "card": {
-        "lastDigits": "5635",
-        "cardExpiry": {
-            "month": 12,
-            "year": 2020
-        },
-        "type": "VI"
-    },
-    "id": "5da985f9-8671-4048-ab85-856be2885ce3",
-    "paReq": "eJxVUttOwkAQ/RXCO91LS2nJsEmVqBgwRAlGX0izndgGe2G7pfD37kIr+jZnLmfPnFnYpApx/oayUShghXUdf+EgS2ZDtT9Thzpsd8xHCR5HsR5RvmMeC1xKvdDdudwNfddk6FDAOnrFg4AjqjorC8HMJAfSQ0OsZBoXWkAsD3eLF+GFPKQUSAchR7WYCz9gQeiZwSuEIs5RyBTlvmy0xloDuaRAlk2h1VkE3AfSA2jUt0i1ruopIW3bOlldObLMgdgCkJuIdWOj2hCdskQkOdWfj1u+fH+gy0103nycn7erpI7aaAbEdkASaxScmu05YwPGp5xNXRfIJQ9xbhWIMXeokdMhqOwjUV+ylb8ZMI4rLGS/Q48AT1VZoOkwNvzGQG6S75+si1IbgzxDO+E0YN6Ejn13bP28FCxLZiwxkq80FgCxo6Q7FemObaJ/n+AHOYusjA==",
-    "links": [
-        {
-            "rel": "self",
-            "href": "http://apikey@api.test.paysafe.com/threedsecure/v1/accounts/89996498/enrollmentchecks/5da985f9-8671-4048-ab85-856be2885ce3"
-        }
-    ]
-    }
-    
-  * If the value for the *threeDEnrollment* parameter = Y, the card is enrolled in 3D Secure. In this case, the result will contain the *acsURL* and *paReq* fields that are required to continue the Authentication process. 
-  * If the value for the threeDEnrollment parameter = N, the card is not enrolled in 3D Secure. In this case, you can decide either to submit the authorization for processing via the Card Payments API or to decline the transaction yourself.    
-  
-**Note:**  If the value for the *threeDEnrollment* parameter = N there is no liability shift.
-
-## Submit a Request to the 3D Secure Server and Retrieve the PaRes
-
-If the *enrollmentchecks* process indicates that the card is enabled for 3D Secure, you can redirect the cardholder to their card issuer's ACS server. This phase of the process must be handled by the merchant systems, and is covered here to provide a brief overview of what is involved. For more details, please consult with the Verified by Visa and MasterCard SecureCode documentation available from Visa and MasterCard respectively.
-
-From the enrollment request, you will need to map the 3D Secure API field names to the 3D Secure field names, and provide your own *TermURL* and *MD* fields.
-
-|Element        |3DS Form Field     |Type       | Description
-|---            |---                |---        |---
-|acsURL         |N/A                |string     |This is the URL of the card issuer's ACS server. You are required to post all values with a 3DS Form Field to this ACS server to continue the 3D Secure process.
-|paReq          |PaReq              |string     |This field contains encoded data about the transaction that is obtained from the Visa/MasterCard directory servers. You must POST this field in an HTML Form to the *acsURL* mentioned above.
-|N/A            |TermUrl            |string     |This is the URL your customer will be returned to at the end of the 3D Secure Authentication process. You must POST this field along with the *PaReq* to the *acsURL*.
-|N/A            |MD                 |string     |This optional field is available for merchant data, which will be posted back to your *TermURL* at the end of the 3D Secure Authentication process.
-
-After the Authentication process has taken place, the ACS server will POST a response with the following values back to your *TermURL* endpoint:
-
-|Element        |3DS Form Field     |Type       | Description
-|---            |---                |---        |---
-|N/A            |MD                 |string     |This is the merchant data that was originally POSTed to the 3D Secure ACS server.
-|paRes          |PaRes              |string     |This is the payment response field. It comprises a lengthy encoded string, similar in form to the *paReq* but usually longer. You will need to pass this field back to the 3D Secure API to validate the Authentication results.
-
-**Note:** Constraints on these fields are undocumented and can vary based on the ACS implementation. Data sizes can exceed 64kb for the PaRes result in some instances.
-
-In most implementations, you will need to use the session data passed back in the *MD* field to reconnect the browser session back to the customer. You will need the *PaRes* in order to continue with the 3D Secure Authentication process.
-
-## Perform a 3D Secure Authentication
-
-Once you have retrieved the PaRes from the ACS server, you will need to verify the response against the *authentications* endpoint in order to verify and extract the values required to proceed with the card authorization.
-
-Use the *PaRes* value returned from the ACS server to populate the *paRes* for the authentications endpoint for the Enrollment Lookup:
-
-POST https://api.test.paysafe.com/threedsecure/v1/accounts/89996498/enrollmentchecks/5da985f9-8671-4048-ab85-856be2885ce3/authentications
-
-```
-{
-        "merchantRefNum": "merchantABC-123-authentications",
-        "paRes": "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"
-    }
-```
-
-This will result in a response with the following structure:
-
-    {
-        "threeDResult" : "Y",
-        "txnTime" : "2014-12-11T12:26:52Z",
-        "cavv" : "MjAgY2hhcmFjdGVyIG1lc3NhZ2U=",
-        "signatureStatus" : "Y",
-        "status" : "COMPLETED",
-        "merchantRefNum" : "merchantABC-123-authentications",
-        "xid" : "dm0tZGV2LWF0LTAyTYyJVMdsAwA=",
-        "eci" : 5,
-        "id" : "caed792d-e424-46da-ad96-fdb4ef488009",
-        "links" : [
-            {
-            "rel" : "self",
-            "href" : "https://api.test.paysafe.com/threedsecure/v1/accounts/89996498/authentications/caed792d-e424-46da-ad96-fdb4ef488009"
-            }
-        ]
-    }
-
-Once you have received a COMPLETED status, you can pass the value for the *threeDEnrollment* parameter from the Enrollment Lookup request and the values for *cavv*, *xid*, *signatureStatus*, *threeDResult*, and *eci* parameters from the Authentication request into the card payments API to authorize a 3D Secure card transaction.
+You can use the 3D Secure REST APIs to verify whether a credit card is enrolled for the 3D Secure service, and then, if it is, to authenticate that credit card when it is being used for an online purchase request. This enables you to process transactions through the Card Payments API that are fully 3D Secure. Click [here](https://developer.paysafe.com/en/rest-api/3ds/using-the-api/scenarios/) for descriptions of the main scenarios.
 
 # Testing Instructions
 
-The Paysafe Test environment can be used to test websites or applications without actually running transactions through a live 3D Secure service. It is important to make sure that your systems are working correctly before going into a live environment.
+The Paysafe Test environment can be used to test websites or applications without actually running transactions through a live 3D Secure service. It is important to make sure that your systems are working correctly before going into a live environment. Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/testing-instructions/) for details of how to use the test environment.
 
-**Note:** 3D Secure transactions processed in the Test environment are not sent to the live network, but through a simulator.
-
-With the Paysafe 3D Secure API you can test the following through a simulator:
-
-*   Y – Authentication Successful
-
-*   N – Authentication Failed
-
-*   U – Authentication Could Not Be Performed
-
-*   A – Attempts Processing Performed
-
-To use the Test environment, you must post your requests to the following endpoint:
-
-https://api.test.paysafe.com/threedsecure/v1/accounts/{test_account_number}
-
-## Paysafe Test ACS Simulator
-
-The Test ACS server will return to a simulated issuer with the following actions:
-
-![](https://developer.paysafe.com/fileadmin/flarecontent/devcentre/Content/Resources/Images/test_acs.png)
-
-## Test Card Numbers
-
-You can use the following test credit card numbers to test your integration.
-
-|Card Type          |Card Number        |3D Secure Enabled      |
-| ---               | ---               | ---                   |
-|Visa               |4530910000012345   | No                    |
-|                   |4510150000000321   | No                    |
-|                   |4107857757053670   | Yes                   |
-|Visa Debit         |4206720389883775   | Yes                   |
-|Visa (Electron)    |4917480000000008   | No                    |
-|                   |4917484589897107   | No                    |
-|MasterCard         |5191330000004415   | No                    |
-|                   |5457490000008763   | No                    |
-|                   |5186750368967720   | Yes                   |
-|MasterCard Debit (Maestro)|6759950000000162 | No               |
-|                   |5036150000001115   | No                    |
-|                   |5573560100022200   | Yes                   |
-|American Express   |370123456789017    | No                    |
-|                   |375529360131002    | No                    |
-|Discover           |6011234567890123   | No                    |
-|JCB                |3569990000000009   | No                    | 
-
-
-**Note:** You can use any of the card numbers to test the Card Payments API or the Hosted Payments API. If you want to test the 3D Secure API and then continue on with the resulting 3D Secure data to perform a test Purchase through the Card Payments API or Hosted Payments API, make sure you use a card number that is 3D Secure Enabled.
-
-### Expiry Date
-
-When using the test card numbers, you can use any date in the future for the expiry date (e.g., 11/18).
-
-<a name="3DSecureResults"></a>
 # 3D Secure Results
 
-When 3D Secure is used in conjunction with an authorization request using the Card Payments API – requiring that the customer authenticates the card used in the transaction – a major advantage to the merchant is that the financial liability switches from the merchant to the card issuer for disputed payments of this type (known as a liability shift). Many factors can affect whether the liability shift occurs, so merchants should contact their account manager for advice. The following table provides a brief overview, which can be used as a rough guideline:
-
-|threeDResult   |Description                    |Recommendation                     |Note|
-|---            |---                            |---                                |--- |
-|Y              |Passed authentication          |Proceed with authorization         |Cardholder passed authentication|
-|A              |Authentication attempted       |Proceed with authorization         |Proceed with authorization |
-|N              |Did not pass authentication    |Do not proceed with authorization  |Cardholder failed authentication |
-|U              |Authentication unavailable     |Decision to proceed with authorization at merchant's discretion    |No liability shift |
-|E              |Error                          |Do not proceed with authorization  |No liability shift |
-
+Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-secure-results/) for details of 3D Secure results and liability shift.
 
 # ISO Standards
 
@@ -559,13 +355,17 @@ When providing card information, merchants can provide either card details or a 
 
 |Element                |Type          |Description|
 |---                    |---           |---|
-|code                   |string        |This is the error code.|
-|message                |string        |This is a description of the error.|
+|code                   |string        |The error code.|
+|message                |string        |A description of the error. Also shown in the X-Application-Error response header.|
+|status                 |string        |"FAILED"       |
 
 ```apib
-{
-    "code": "1000",
-    "message": "An internal error occurred."
+{  
+   "error":{  
+      "code":"5016",
+      "message":"Account not found"
+   },
+   "status":"FAILED"
 }
 ```
 
