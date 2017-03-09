@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: https://api.test.paysafe.com/threedsecure/v1/
+HOST: https://api.test.paysafe.com/threedsecure/
 
 # Paysafe 3D Secure API
 
@@ -294,7 +294,7 @@ Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-s
 |status                 |enum                           |This is the status of the Enrollment Lookup request. Possible values are:<br/><ul><li>COMPLETED – The transaction has been completed.</li><li>FAILED – The authentication request failed. Check the error code for details.</li></ul>|
 |threeDResult           |enum                           |This indicates the outcome of the Authentication.<br/><ul><li>Y &ndash; The cardholder successfully authenticated with their card issuer.</li><li>A &ndash; The cardholder authentication was attempted.</li><li>N &ndash; The cardholder failed to successfully authenticate with their card issuer.</li><li>U &ndash; Authentication with the card issuer was unavailable.</li><li>E &ndash; An error occurred during authentication.</li></ul><br/>See [3D Secure Results](#3DSecureResults) for more information on these Authentication outcome values.|
 |signatureStatus        |enum                           |This is the 3D Secure signature verification result value.<br/><ul><li>Y &ndash; All transaction and signature checks satisfied.</li><li>N &ndash; At least one transaction or signature check failed.</li></ul>|
-|eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer Authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**MasterCard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul></br>**Note:** This value is available if the value for *threeDEnrollment* = N and the card scheme supports non-participating issuers.|
+|eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer Authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**MasterCard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul>|
 |cavv                   |string<br/>`length<=80`        |This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated. This value should be appended to the authorization request signifying that the transaction has been successfully authenticated.|
 |xid                    |string<br/>`length<=40`        |This is the transaction identifier returned by the card issuer.|
 
@@ -449,10 +449,22 @@ When you are ready to test your example, you can choose between the Production a
 
 To call the API resource, click **Call Resource**. The response is displayed in the Console window.Minor 
 
+## Verify the Service is Accessible [GET /monitor]
+
+This call returns a status of READY if the API is available.
+
++ Response 200 (application/json)
+
+  + Body
+    
+            {
+                "status" : "READY"
+            }
+
 # Enrollment Lookups [/enrollmentchecks]
 <a name="enrollmentlookup"></a>
 
-## Enrollment Lookup [POST /accounts/{ACCOUNT_ID}/enrollmentchecks]
+## Enrollment Lookup [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
 
 This is how you do an Enrollment Lookup.
 
@@ -523,7 +535,7 @@ This is how you do an Enrollment Lookup.
         + customerIp:127.0.0.1 (string, required) - This is the customer's IP address.
         + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the customer to complete the payer Authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string, required)
-        + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
+        + eci:5 (number, optional) - This is the [e-commerce indicator](#enrollmentchecksobject). 
         + threeDEnrollment:Y (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. 
             - Y – Cardholder authentication available 
             - N – Cardholder not enrolled in authentication
@@ -557,7 +569,7 @@ This is how you do an Enrollment Lookup.
             "threeDEnrollment": "Y"
             }
             
-## Enrollment Lookup with a Payment Token [POST /accounts/{ACCOUNT_ID}/enrollmentchecks]
+## Enrollment Lookup with a Payment Token [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
 
 This is how you do an Enrollment Lookup using a payment token.
 
@@ -621,7 +633,7 @@ This is how you do an Enrollment Lookup using a payment token.
         + customerIp:127.0.0.1 (string, required) - This is the customer's IP address.
         + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the customer to complete the payer Authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string, required)
-        + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
+        + eci:5 (number, optional) - This is the [e-commerce indicator](#enrollmentchecksobject).
         + threeDEnrollment:Y (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. 
             - Y – Cardholder authentication available 
             - N – Cardholder not enrolled in authentication
@@ -656,7 +668,7 @@ This is how you do an Enrollment Lookup using a payment token.
             }
             
             
-## Get Enrollment Lookup [GET /accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}]
+## Get Enrollment Lookup [GET /v1/accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}]
 
 This is how you look up an Enrollment Lookup. 
 
@@ -696,7 +708,7 @@ This is how you look up an Enrollment Lookup.
         + customerIp:127.0.0.1 (string, required) - This is the customer's IP address.
         + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the customer to complete the payer authentication transaction. This value is available only if the value for threeDEnrollment = Y.
         + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string, required)
-        + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
+        + eci:5 (number, optional) - This is the [e-commerce indicator](#enrollmentchecksobject).
         + threeDEnrollment:Y (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. 
             - Y – Cardholder authentication available 
             - N – Cardholder not enrolled in authentication
@@ -734,7 +746,7 @@ This is how you look up an Enrollment Lookup.
 # Authentications [/authentications]
 <a name="authenticationrequest"></a>
 
-## Authentications [POST /accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}/authentications]
+## Authentications [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}/authentications]
 
 This is how you submit an Authentications request that allows a cardholder to authenticate their card at the issuer and to retrieve the values required for the authentication element of an Authorization request.
 
@@ -781,9 +793,9 @@ This is how you submit an Authentications request that allows a cardholder to au
         + signatureStatus:Y (enum, required) - This is the 3D Secure signature verification result value.
             - Y – All transaction and signature checks satisfied.
             - N – At least one transaction or signature check failed.
-        + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
-        + cavv:`AAABBhkXYgAAAAACBxdiENhf7A+=` (string, required) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
-        + xid:`aWg4N1ZZOE53TkFrazJuMmkyRDA=` (number, optional) - This is the transaction identifier returned by the card issuer.
+        + eci:5 (number, optional) - This is the [e-commerce indicator](#authenticationsobject). 
+        + cavv:`AAABBhkXYgAAAAACBxdiENhf7A+=` (string, optional) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
+        + xid:`aWg4N1ZZOE53TkFrazJuMmkyRDA=` (string, optional) - This is the transaction identifier returned by the card issuer.
         
     + Body
 
@@ -805,7 +817,7 @@ This is how you submit an Authentications request that allows a cardholder to au
                 "xid": "aWg4N1ZZOE53TkFrazJuMmkyRDA="
             }   
             
-## Get Authentication [GET /accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}]
+## Get Authentication [GET /v1/accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}]
 
 This is how you look up an Authentication. 
 
@@ -841,9 +853,9 @@ This is how you look up an Authentication.
         + signatureStatus:Y (enum, required) - This is the 3D Secure signature verification result value.
             - Y – All transaction and signature checks satisfied.
             - N – At least one transaction or signature check failed.
-        + eci:5 (number, optional) - This is the e-commerce indicator. It is available if the value for threeDEnrollment = N and the card scheme supports non-participating issuers.
-        + cavv:`AAABBhkXYgAAAAACBxdiENhf7A+=` (string, required) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
-        + xid:`aWg4N1ZZOE53TkFrazJuMmkyRDA=` (number, optional) - This is the transaction identifier returned by the card issuer.
+        + eci:5 (number, optional) - This is the [e-commerce indicator](#authenticationsobject). 
+        + cavv:`AAABBhkXYgAAAAACBxdiENhf7A+=` (string, optional) - This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated.
+        + xid:`aWg4N1ZZOE53TkFrazJuMmkyRDA=` (string, optional) - This is the transaction identifier returned by the card issuer.
 
         
     + Body
