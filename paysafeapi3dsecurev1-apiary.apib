@@ -13,6 +13,8 @@ HOST: https://api.test.paysafe.com/threedsecure/
 
 A transaction using Verified by Visa or MasterCard SecureCode will initiate a redirection to the website of the card issuing bank to authorize the transaction. Each issuing bank could use any kind of authentication method (the protocol does not cover this) but typically, a password-based method is used. So to effectively buy on the Internet means using a password tied to the card. The Verified by Visa protocol recommends the bank's verification page to load in an [inline frame](http://en.wikipedia.org/wiki/HTML_element#Frames) session. In this way, the bank's systems can be held responsible for most security breaches.
 
+**Note:** 3D Secure is currently supported for Visa and MasterCard brands only. Contact your account manager for more information.
+
 The basic concept of the protocol is to tie the financial authorization process with an online authentication.
 
 1. The merchant submits an Enrollment Lookup request on the cardholder PAN (credit card) to the enrollmentchecks endpoint. This will initiate a lookup to identify whether the card is registered for 3D Secure. 
@@ -47,7 +49,7 @@ In order for you to use the Paysafe REST API, Paysafe must first set you up on t
   * Key Username – MerchantXYZ
   * Key Password – B-tst1-0-51ed39e4-312d02345d3f123120881dff9bb4020a89e8ac44cdfdcecd702151182fdc952272661d290ab2e5849e31bb03deede7e
 
-Note this is not the same as your Merchant Back Office username and password.
+**Note:** This is not the same as your Merchant Back Office username and password.
 
 The case-sensitive API key is sent using HTTP Basic Authentication. To use HTTP Basic Authentication, you must send the API key credentials using the Authorization header with every request. The Authorization header is constructed as follows:
 
@@ -324,7 +326,6 @@ When providing card information, merchants can provide either card details or a 
 |lastDigits             |string<br/>`length=4`        |                         |This is the last four digits of the card used for the request, returned in the response.|
 |type                   |string                       |                         |This is the type of card used for the request.|
 
-
 ```apib
 {
     "cardNum": "123456789321",
@@ -527,7 +528,7 @@ This is how you do an Enrollment Lookup.
         + amount:5000 (number, required) - This is the amount of the request, in minor units. For example, US $10.99 would be 1099.
         + currency:USD (string, required) - This is the currency of the merchant account.
         + card (object, required) - These are the details of the [card](#cardobject) used for the request.
-            - cardType:VI (enum, required) - This is the type of card used for the request.
+            - type:VI (enum, required) - This is the type of card used for the request.
             - lastDigits:1111 (string, required) - This is the last four digits of the card used for the request.
             - cardExpiry (object, required) - This is the card expiry date.
                 - month:10 (number, required) - This is month the card expires.
