@@ -514,6 +514,8 @@ This is how you do an Enrollment Lookup.
 
 + Response 200 (application/json)
 
+    If card enrolled
+
     + Attributes
         + links (array, required) - This is an [array of links](#linksobject).
             + (object)
@@ -528,6 +530,7 @@ This is how you do an Enrollment Lookup.
         + amount:5000 (number, required) - This is the amount of the request, in minor units. For example, US $10.99 would be 1099.
         + currency:USD (string, required) - This is the currency of the merchant account.
         + card (object, required) - These are the details of the [card](#cardobject) used for the request.
+            - cardType:VI (enum, required) - Deprecated. This is the type of card used for the request. Use type instead.
             - type:VI (enum, required) - This is the type of card used for the request.
             - lastDigits:1111 (string, required) - This is the last four digits of the card used for the request.
             - cardExpiry (object, required) - This is the card expiry date.
@@ -535,7 +538,7 @@ This is how you do an Enrollment Lookup.
                 - year:2020 (number, required) - This is the year the card expires.            
         + customerIp:127.0.0.1 (string, required) - This is the customer's IP address.
         + acsURL:`https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B` (string, optional) - This is the fully qualified URL to redirect the customer to complete the payer Authentication transaction. This value is available only if the value for threeDEnrollment = Y.
-        + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string, required)
+        + paReq:`eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==` (string)
         + eci:5 (number, optional) - This is the [e-commerce indicator](#enrollmentchecksobject). 
         + threeDEnrollment:Y (enum, required) - This indicates whether or not the cardholder is enrolled in 3D Secure. 
             - Y – Cardholder authentication available 
@@ -569,6 +572,39 @@ This is how you do an Enrollment Lookup.
             "paReq": "eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==",
             "threeDEnrollment": "Y"
             }
+
++ Response 200 (application/json) 
+
+    If card not enrolled
+
+    + Body
+
+            {
+            "amount": 5000,
+            "card": {
+                "cardExpiry": {
+                    "month": 10,
+                    "year": 2020
+                },
+                "cardType": "VI",
+                "lastDigits": "2345",
+                "type": "VI"
+            },
+            "currency": "GBP",
+            "customerIp": "172.0.0.1",
+            "eci": 6,
+            "id": "4fdb66c4-1070-49e8-b525-4bd496c16156",
+            "links": [
+                {
+                "href": "https://test_s4unders:B-qa2-0-5845377d-0-302c021408afe10ec281ac1c3a7364309f77d27aab4eda6c021478f5f5f2886391865080cf1e053e2c6a144671c7@api.test.paysafe.com/threedsecure/v1/accounts/1001076700/enrollmentchecks/4fdb66c4-1070-49e8-b525-4bd496c16156",
+                "rel": "self"
+                }
+            ],
+            "merchantRefNum": "check1",
+            "status": "COMPLETED",
+            "threeDEnrollment": "N",
+            "txnTime": "2017-03-27T12:19:43Z"
+            }    dded second 200
             
 ## Enrollment Lookup with a Payment Token [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
 
