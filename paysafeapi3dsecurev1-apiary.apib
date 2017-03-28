@@ -445,7 +445,7 @@ This call returns a status of READY if the API is available.
 
 ## Enrollment Lookup [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
 
-This is how you do an Enrollment Lookup.
+This is how you do an Enrollment Lookup. You must then POST the paReq value from the lookup response to the acsURL, also from the response, together with the merchant response URL (TermUrl) for card authentication. The payment response (paRes) generated during authentication is then posted to the TermUrl. 
 
 + Parameters
 
@@ -762,7 +762,7 @@ This is how you look up an Enrollment Lookup.
 
 ## Authentications [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}/authentications]
 
-This is how you submit an Authentications request that allows a cardholder to authenticate their card at the issuer and to retrieve the values required for the authentication element of an Authorization request.
+This is how you submit an Authentications request containing the payment authentication result (paRes), which allows the cardholder to authenticate their card at the issuer and to retrieve the values required for the authentication element of a card payment authorization request.
 
 + Parameters
     + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
