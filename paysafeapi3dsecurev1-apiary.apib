@@ -300,9 +300,9 @@ When providing card information, merchants can provide either card details or a 
 |Element                |Type                         |Required                 |Description|
 |---                    |---                          |---                      |---       |
 |cardNum                |string<br/>`length=8-20`     |                         |This is the card number. |
-|cardExpiry             |[complex](#cardExpiry)       |Required                 |This is the card expiry date.|
+|cardExpiry             |[complex](#cardExpiryobject) |Required                 |This is the card expiry date.|
 |lastDigits             |string<br/>`length=4`        |                         |This is the last four digits of the card used for the request, returned in the response.|
-|type                   |enum                         |                         |This is the type of card used for the request. <li>MC – MasterCard</li><li>VI – Visa</li>|
+|type                   |enum                         |                         |This is the type of card used for the request. <ul><li>MC – MasterCard</li><li>VI – Visa</li></ul>|
 
 ```apib
 {
