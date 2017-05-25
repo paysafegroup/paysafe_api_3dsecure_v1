@@ -537,7 +537,7 @@ This is how you do an Enrollment Lookup. You must then POST the paReq value from
             "amount": 5000,
             "currency" : "USD",
             "card": {
-                "cardType": "VI",
+                "type": "VI",
                 "lastDigits": "1111",
                 "cardExpiry": {
                     "month": 10,
@@ -563,7 +563,7 @@ This is how you do an Enrollment Lookup. You must then POST the paReq value from
                     "month": 10,
                     "year": 2020
                 },
-                "cardType": "VI",
+                "type": "VI",
                 "lastDigits": "2345",
                 "type": "VI"
             },
@@ -639,7 +639,7 @@ This is how you do an Enrollment Lookup using a payment token.
         + amount:5000 (number, required) - This is the amount of the request, in minor units. For example, US $10.99 would be 1099.
         + currency:USD (string, required) - This is the currency of the merchant account.
         + card (object, required) - These are the details of the [card](#cardobject) used for the request.
-            - cardType:VI (enum, required) - This is the type of card used for the request. 
+            - type:VI (enum, required) - This is the type of card used for the request. 
             - lastDigits:1111 (string, required) - This is the last four digits of the card used for the request.
             - cardExpiry (object, required) - This is the card expiry date.
                 - month:10 (number, required) - This is month the card expires.
@@ -668,7 +668,7 @@ This is how you do an Enrollment Lookup using a payment token.
             "amount": 5000,
             "currency" : "USD",
             "card": {
-                "cardType": "VI",
+                "type": "VI",
                 "lastDigits": "1111",
                 "cardExpiry": {
                     "month": 10,
@@ -714,7 +714,7 @@ This is how you look up an Enrollment Lookup.
         + amount:5000 (number, required) -  This is the amount of the request, in minor units. For example, US $10.99 would be 1099.
         + currency:USD (string, required) - This is the currency of the merchant account.
         + card (object, required) - These are the details of the [card](#cardobject) used for the request.
-            - cardType:VI (enum, required) - This is the type of card used for the request.
+            - type:VI (enum, required) - This is the type of card used for the request.
             - lastDigits:1111 (string, required) - This is the last four digits of the card used for the request.
             - cardExpiry (object, required) - This is the card expiry date.
                 - month:10 (number, required) - This is month the card expires.
@@ -744,7 +744,7 @@ This is how you look up an Enrollment Lookup.
             "amount": 5000,
             "currency" : "USD",
             "card": {
-                "cardType": "VI",
+                "type": "VI",
                 "lastDigits": "1111",
                 "cardExpiry": {
                     "month": 10,
@@ -910,7 +910,7 @@ This is how you look up an Authentication.
 # Data Structures
 
 ## card
-- cardType (string) - This is the type of card used for the request.
+- type (string) - This is the type of card used for the request.
 - cardNum (string) - This is the card number used for the request.
 - lastDigits (string) - This is the last four digits of the card used for the request, returned in the response.   
 - cardExpiry (object) - This is the [card expiry](#cardExpiry) date.
