@@ -978,46 +978,47 @@ This is how you look up an Authentication and associated enrollment check in one
     + Body
 
             {  
-               "links":[  
+               "links": [  
                   {  
-                     "rel":"self",
-                     "href":"https://api.netbanx.com/threedsecure/v1/accounts/99000/authentications/5d4db3bc-34c9-417f-a051-0d992ad9284e"
+                     "rel": "self",
+                     "href": "https://api.paysafe.com/threedsecure/v1/accounts/99000/authentications/5d4db3bc-34c9-417f-a051-0d992ad9284e"
                   }
                ],
-               "id":"5d4db3bc-34c9-417f-a051-0d992ad9284e",
-               "merchantRefNum":"merchantABC-123-authentications",
-               "txnTime":"2014-04-09T17:59:55Z",
-               "status":"COMPLETED",
-               "threeDResult":"Y",
-               "signatureStatus":"Y",
-               "eci":5,
-               "cavv":"AAABBhkXYgAAAAACBxdiENhf7A+=",
-               "xid":"aWg4N1ZZOE53TkFrazJuMmkyRDA=",
-               "enrollmentchecks":[  
+               "id": "5d4db3bc-34c9-417f-a051-0d992ad9284e",
+               "merchantRefNum": "merchantABC-123-authentications",
+               "txnTime": "2016-04-09T17:59:55Z",
+               "status": "COMPLETED",
+               "threeDResult": "Y",
+               "signatureStatus": "Y",
+               "eci": 5,
+               "cavv": "AAABBhkXYgAAAAACBxdiENhf7A+=",
+               "xid": "aWg4N1ZZOE53TkFrazJuMmkyRDA=",
+               "enrollmentchecks": [  
                   {  
-                     "links":[  
+                     "links": [  
                         {  
-                           "rel":"self",
-                           "href":"https://api.netbanx.com/threedsecure/v1/accounts/99000/enrollmentchecks/e067d83f-add7-4b6b-8884-dfa8693dde1f"
+                           "rel": "self",
+                           "href": "https://api.paysafe.com/threedsecure/v1/accounts/99000/enrollmentchecks/e067d83f-add7-4b6b-8884-dfa8693dde1f"
                         }
                      ],
-                     "id":"e067d83f-add7-4b6b-8884-dfa8693dde1f",
-                     "merchantRefNum":"merchantABC-123-enrollmentchecks",
-                     "txnTime":"2014-04-09T17:59:55Z",
-                     "status":"COMPLETED",
-                     "amount":5000,
-                     "card":{  
-                        "type":"VI",
-                        "lastDigits":"1111",
-                        "cardExpiry":{  
-                           "month":1,
-                           "year":2015
+                     "id": "e067d83f-add7-4b6b-8884-dfa8693dde1f",
+                     "merchantRefNum": "merchantABC-123-enrollmentchecks",
+                     "txnTime": "2016-04-09T17:59:55Z",
+                     "status": "COMPLETED",
+                     "amount": 5000,
+                     "card": {  
+                        "type": "VI",
+                        "lastDigits": "1111",
+                        "cardExpiry": {  
+                           "month": 10,
+                           "year": 2020
                         }
                      },
-                     "customerIp":"127.0.0.1",
-                     "acsURL":"https://testcustomer34.cardinalcommerce.com/V3DSStart?osb=visa-3&VAA=B",
-                     "paReq":"eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==",
-                     "threeDEnrollment":"Y"
+                     "currency": "USD"
+                     "customerIp": "127.0.0.1",
+                     "acsURL": "https://pay.test.netbanx.com/emulator/test_acs",
+                     "paReq": "eNpVUk1TwjAUvOdXOIznJoUwVuaRGRAH0PqFFPEYQ5QqSUuaQvHXm0ARvb3dvNnsbgLTpZFy8CxFaSSDO1kU/EOepYtu4+n6Vg1jEyc8LmK7+czfX0mDwWNvItcMNtIUaaZZGJCgCfgIkZMwYsm1ZcDFuj++Z5TSVqsFuIYIlDTjAaMRjVoXEb2gEeADhUBzJdl1kXMhb2RZAd4TCERWamt2LKIE8BEgKM2KLa3NOxhvt9sgy22q+CrnOyW1LQKRKcB+BwE+2Xos/VS4tFW6YEkyi9+SxZ34qmavSfU9HU2aXPfVy7TXBew3ECy4laxJQkoouTwLow4hHRIC3vMIuPKG2HmbBMTZqyGC3F/UO6A28Ud/GReqNEZqcUx1RAhklWfaJWCu2N/ZZTg5vxr5eoV1pQ31LqVq0BsNbKWfqlv+sJqbebO/Cj985/udvWTqKgvb3ncNnKLXwfWL4vrx3fTvU/wAaAaz3g==",
+                     "threeDEnrollment": "Y"
                   }
                ]
             }  
