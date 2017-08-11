@@ -19,7 +19,7 @@ The steps in 3D Secure cardholder authentication are shown below. For a detailed
 
 ![](https://developer.paysafe.com/fileadmin/flarecontent/devcentre/Content/Resources/Images/3DAPIOverview.png)
 
-<a name="apikey"></a>
+<a name="apikey" title="Authentication"></a>
 # Authentication
 
 In order for you to use the Paysafe REST API, Paysafe must first set you up on their system and provide you with an API key. Your API key looks something like this:
@@ -68,6 +68,7 @@ For example:
 
 ``https://api.paysafe.com/threedsecure/v1/accounts/{ACCOUNT_ID}``
 
+<a name="globalinvalidcharacters" title="Global Invalid Characters"></a>
 # Global Invalid Characters
 
 You must not include any of the characters in the following table as values in any of your request parameters. If you do, your request will result in an error.
@@ -90,8 +91,8 @@ The 3D Secure API allows merchants to verify whether a credit card being used fo
 
 The following request types are supported: 
 
-  * [Enrollment Lookups](#enrollmentlookup)
-  * [Authentications](#authenticationrequest)
+  * [Enrollment Lookups](#enrollmentlookups)
+  * [Authentications](#authentications)
   
 **API Endpoint**
 
@@ -120,9 +121,10 @@ The Paysafe Test environment can be used to test websites or applications withou
 
 Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-secure-results/) for details of 3D Secure results and liability shift.
 
+<a name="isostandards" title="ISO Standards"></a>
 # ISO Standards
 
-<a name="CurrencyCodes"></a>
+<a name="CurrencyCodes" title="Currency Codes"></a>
 ## Currency Codes
 
 **Note:**
@@ -219,7 +221,7 @@ Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-s
 
 # Complex JSON Objects
 
-<a name="enrollmentchecksobject"></a>
+<a name="enrollmentchecksobject" title="Enrollment Checks Object"></a>
 ## enrollmentchecks
 
 |Element                |Type                           |Description|
@@ -260,7 +262,7 @@ Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-s
 }
 ```
 
-<a name="authenticationsobject"></a>
+<a name="authenticationsobject" title="Authentications Object"></a>
 ## authentications
 
 |Element                |Type                           |Description|
@@ -285,8 +287,7 @@ Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-s
 }
 ```
 
-
-<a name="cardobject"></a>
+<a name="cardobject" title="Card Object"></a>
 ## card
 
 When providing card information, merchants can provide either card details or a payment token for a customer already created in the system. 3D Secure is currently supported for Visa and MasterCard brands only; contact your account manager for more information. 
@@ -314,7 +315,7 @@ When providing card information, merchants can provide either card details or a 
 }
 ```
 
-<a name="cardExpiryobject"></a>
+<a name="cardExpiryobject" title="Card Expiry Object"></a>
 ## cardExpiry
 
 |Element                 |Type                   |Required                  |Description|
@@ -329,7 +330,7 @@ When providing card information, merchants can provide either card details or a 
 }
 ```
 
-<a name="errorobject"></a>
+<a name="errorobject" title="Error Object"></a>
 ## error
 
 |Element                |Type          |Description|
@@ -348,7 +349,7 @@ When providing card information, merchants can provide either card details or a 
 }
 ```
 
-<a name="linksobject"></a>
+<a name="linksobject" title="Links Object"></a>
 ## links
 
 |Element    |Type          |Required    |Description|
@@ -369,6 +370,7 @@ When providing card information, merchants can provide either card details or a 
 
 # Error Summary
 
+<a name="commonerrors" title="Common Errors"></a>
 ## Common Errors
 |HTTP Status Code       |Error Code     |Description|
 |---                    |---            |---|
@@ -407,6 +409,7 @@ When providing card information, merchants can provide either card details or a 
 |405                    |5281           |The request uses an action (e.g., GET, POST, or PUT) that is not supported by the resource.|
 |400                    |5502           |Either the payment token is invalid or the corresponding profile or bank account is not active.|
 
+<a name="3dserrors" title="3D Secure Errors"></a>
 ## 3D Secure Errors
 If an error occurs during the 3D Secure processing at Visa, MasterCard, or the Issuer, this will not be reported directly to the merchant. Instead the 3D Secure process will continue as normally as possible. For example:
   * If an error occurs within the directory server the *threeDEnrollment* field will indicate "U" and no ACS URL will be returned.
@@ -429,6 +432,7 @@ When you are ready to test your example, you can choose between the Production a
 To call the API resource, click **Call Resource**. The response is displayed in the Console window.Minor 
 
 ## Verify the Service is Accessible [GET /monitor]
+<a name="verifyservice" title="Verify Service"></a>
 
 This call returns a status of READY if the API is available.
 
@@ -441,9 +445,10 @@ This call returns a status of READY if the API is available.
             }
 
 # Enrollment Lookups [/enrollmentchecks]
-<a name="enrollmentlookup"></a>
+<a name="enrollmentlookups" title="Enrollment Lookups"></a>
 
 ## Enrollment Lookup [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
+<a name="enrollmentlookup" title="Enrollment Lookup"></a>
 
 This is how you do an Enrollment Lookup. You must then POST the paReq value from the lookup response to the acsURL, also from the response, together with the merchant response URL (TermUrl) for card authentication. The payment authentication response (paRes) generated during authentication is then posted to the TermUrl. 
 
@@ -585,6 +590,7 @@ This is how you do an Enrollment Lookup. You must then POST the paReq value from
             }
             
 ## Enrollment Lookup with a Payment Token [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
+<a name="enrollmentlookuptoken" title="Enrollment Lookup with Token"></a>
 
 This is how you do an Enrollment Lookup using a payment token.
 
@@ -684,6 +690,7 @@ This is how you do an Enrollment Lookup using a payment token.
             
             
 ## Get Enrollment Lookup [GET /v1/accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}]
+<a name="getenrollmentlookup" title="Look Up an Enrollment Lookup"></a>
 
 This is how you look up an Enrollment Lookup. 
 
@@ -759,9 +766,10 @@ This is how you look up an Enrollment Lookup.
             }          
 
 # Authentications [/authentications]
-<a name="authenticationrequest"></a>
+<a name="authentications" title="Authentications"></a>
 
 ## Authentications [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}/authentications]
+<a name="authentication" title="Authentication"></a>
 
 This is how you submit an Authentications request containing the payment authentication response (paRes), which allows the cardholder to authenticate their card at the issuer and to retrieve the values required for the authentication element of a card payment authorization request.
 
@@ -833,6 +841,7 @@ This is how you submit an Authentications request containing the payment authent
             }   
             
 ## Get Authentication [GET /v1/accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}]
+<a name="getauthentication" title="Look Up an Authentication"></a>
 
 This is how you look up an Authentication. 
 
@@ -894,6 +903,7 @@ This is how you look up an Authentication.
             }              
 
 ## Get Authentication with Enrollment Check [GET /v1/accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}?fields=enrollmentchecks]
+<a name="getauthenticationcheck" title="Look Up an Authentication with Enrollment Check"></a>
 
 This is how you look up an Authentication and associated enrollment check in one request. 
 
