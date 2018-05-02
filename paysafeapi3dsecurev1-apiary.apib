@@ -483,7 +483,7 @@ This is how you do an Enrollment Lookup. You must then POST the paReq value from
                 - year:2020 (number, required) - This is the year the card expires.
         + customerIp:`172.0.0.1` (string, required) - This is the customer's IP address.
         + userAgent:`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36` (string, required) - This is the User-Agent header from the customer's browser.
-        + acceptHeader:`text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8` (string, optional) - This is the Accept header from the customer's browser. Paysafe recommends including this parameter, as it can lead to higher 3D Secure acceptance rates. 
+        + acceptHeader:`text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8` (string, optional) - This is the Accept header from the customer's browser. Paysafe recommends including this parameter. 
         + merchantUrl:https://www.merchant.com (string, required) - This is the fully qualified URL of the merchant's commercial or customer care website.
             
     + Body
@@ -622,7 +622,7 @@ This is how you do an Enrollment Lookup using a payment token.
             - paymentToken:LTEyMzYzMjQ3ODg (string, required) - This is the payment token.
         + customerIp:`172.0.0.1` (string, required) - This is the customer's IP address.
         + userAgent:`Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36` (string, required) - This is the User-Agent header from the customer's browser.
-        + acceptHeader:`text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8` (string, optional) - This is the Accept header from the customer's browser. Paysafe recommends including this parameter, as it can lead to higher 3D Secure acceptance rates.
+        + acceptHeader:`text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8` (string, optional) - This is the Accept header from the customer's browser. Paysafe recommends including this parameter.
         + merchantUrl:https://www.merchant.com (string, required) - This is the fully qualified URL of the merchant's commercial or customer care website.
 
     + Body
