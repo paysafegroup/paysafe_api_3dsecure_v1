@@ -56,7 +56,7 @@ In order to test your integration with Paysafe, use the following Test URL:
 
 For example:
 
-``https://api.test.paysafe.com/threedsecure/v1/accounts/{ACCOUNT_ID}``
+``https://api.test.paysafe.com/threedsecure/v1/accounts/{account_id}``
 
 ## Production URL
 
@@ -66,7 +66,7 @@ In order to process live requests with Paysafe, use the following Production URL
 
 For example:
 
-``https://api.paysafe.com/threedsecure/v1/accounts/{ACCOUNT_ID}``
+``https://api.paysafe.com/threedsecure/v1/accounts/{account_id}``
 
 <a name="globalinvalidcharacters" title="Global Invalid Characters"></a>
 # Global Invalid Characters
@@ -96,16 +96,16 @@ The following request types are supported:
   
 **API Endpoint**
 
-`https://api.paysafe.com/threedsecure/v1/accounts/{ACCOUNT_ID}`
+`https://api.paysafe.com/threedsecure/v1/accounts/{account_id}`
 
 **Resource Patterns**
 
 |Endpoint URL                                       |Description                                        |Action |
 |---                                                |---                                                |---    |
 |/enrollmentchecks                                  |Verify whether a card is enrolled in 3D Secure     |POST   |
-|/enrollmentchecks/{ENROLLMENT_ID}                  |Look up an enrollment response                     |GET    |
-|/enrollmentchecks/{ENROLLMENT_ID}/authentications  |Authenticate a card with 3D Secure                 |POST   |
-|/authentications/{AUTHENTICATION_ID}               |Look up an Authentication request                  |GET    |
+|/enrollmentchecks/{enrollment_id}                  |Look up an enrollment response                     |GET    |
+|/enrollmentchecks/{enrollment_id}/authentications  |Authenticate a card with 3D Secure                 |POST   |
+|/authentications/{authentication_id}               |Look up an Authentication request                  |GET    |
 
 
 
@@ -420,7 +420,7 @@ In the event of an error, it is up to the merchant whether they wish to proceed 
 # Using the example API calls (Console Window)
 To configure and test the API examples, first click on one of the API calls in the API Reference section and then click **Switch to Console** in the right hand pane. 
 Using the Console window you can update the headers, the request body, and parts of the API endpoint. 
-For example, for many requests you must update the endpoint to include your account ID, which you do by selecting **URI Parameters** and then updating the **ACCOUNT_ID** value. 
+For example, for many requests you must update the endpoint to include your account ID, which you do by selecting **URI Parameters** and then updating the **account_id** value. 
 (To get your account ID, log into the Paysafe Back Office, choose **Accounts** and look in the *Account* column).
 You must also update the Header to include your API Key by selecting **Headers** and then updating the **Authorization** value using the Base64
 version of your API key. To get your API key, log into the test version of the Merchant Back Office and choose **Settings > API Key**. 
@@ -433,9 +433,9 @@ To call the API resource, click **Call Resource**. The response is displayed in 
 
 # Legal and Community
 <ul>
-<li><a href="https://www.paysafe.com/privacy-policy/" target="_blank">Privacy Policy</a></li>
+<li><a href="https://www.paysafe.com/paysafegroup/privacy-policy/" target="_blank">Privacy Policy</a></li>
 <li><a href="https://developer.paysafe.com/en/resources-and-support/terms-of-use/" target="_blank">Terms of Use</a></li>
-<li><a href="http://www.paysafe.com/regulatory-disclosure/" target="_blank">Regulatory Disclosures</a></li>
+<li><a href="https://www.paysafe.com/paysafegroup/regulatory-disclosures/" target="_blank">Regulatory Disclosures</a></li>
 <li><a href="http://community.paysafe.com/spaces/11/index.html" target="_blank">FAQs</a></li>
 <li><a href="http://community.paysafe.com/index.html" target="_blank">Community</a></li>
 <li><a href="http://community.paysafe.com/spaces/10/index.html" target="_blank">Paysafe Blog</a></li>
@@ -457,14 +457,14 @@ This call returns a status of READY if the API is available.
 # Enrollment Lookups [/enrollmentchecks]
 <a name="enrollmentlookups" title="Enrollment Lookups"></a>
 
-## Enrollment Lookup [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
+## Enrollment Lookup [POST /v1/accounts/{account_id}/enrollmentchecks]
 <a name="enrollmentlookup" title="Enrollment Lookup"></a>
 
 This is how you do an Enrollment Lookup. You must then POST the paReq value from the lookup response to the acsURL, also from the response, together with the merchant response URL (TermUrl) for card authentication. The payment authentication response (paRes) generated during authentication is then posted to the TermUrl. 
 
 + Parameters
 
-    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+    + account_id:123456789 (string, required) - This is the merchant account number.
 
 + Request Enrollment Lookup (application/json)
 
@@ -599,14 +599,14 @@ This is how you do an Enrollment Lookup. You must then POST the paReq value from
             "txnTime": "2016-04-09T17:59:55Z"
             }
             
-## Enrollment Lookup with a Payment Token [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks]
+## Enrollment Lookup with a Payment Token [POST /v1/accounts/{account_id}/enrollmentchecks]
 <a name="enrollmentlookuptoken" title="Enrollment Lookup with Token"></a>
 
 This is how you do an Enrollment Lookup using a payment token.
 
 + Parameters
     
-    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
+    + account_id:123456789 (string, required) - This is the merchant account number.
 
 + Request Enrollment Lookup (application/json)
 
@@ -699,15 +699,15 @@ This is how you do an Enrollment Lookup using a payment token.
             }
             
             
-## Get Enrollment Lookup [GET /v1/accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}]
+## Get Enrollment Lookup [GET /v1/accounts/{account_id}/enrollmentchecks/{enrollmentcheck_id}]
 <a name="getenrollmentlookup" title="Look Up an Enrollment Lookup"></a>
 
 This is how you look up an Enrollment Lookup. 
 
 + Parameters
 
-    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
-    + ENROLLMENTCHECK_ID:`e067d83f-add7-4b6b-8884-dfa8693dde1f` (string, required) - This is the Enrollment Lookup ID.
+    + account_id:123456789 (string, required) - This is the merchant account number.
+    + enrollmentcheck_id:`e067d83f-add7-4b6b-8884-dfa8693dde1f` (string, required) - This is the Enrollment Lookup ID.
 
 + Request Get Enrollment Lookup (application/json)
 
@@ -778,14 +778,14 @@ This is how you look up an Enrollment Lookup.
 # Authentications [/authentications]
 <a name="authentications" title="Authentications"></a>
 
-## Authentications [POST /v1/accounts/{ACCOUNT_ID}/enrollmentchecks/{ENROLLMENTCHECK_ID}/authentications]
+## Authentications [POST /v1/accounts/{account_id}/enrollmentchecks/{enrollmentcheck_id}/authentications]
 <a name="authentication" title="Authentication"></a>
 
 This is how you submit an Authentications request containing the payment authentication response (paRes), which allows the cardholder to authenticate their card at the issuer and to retrieve the values required for the authentication element of a card payment authorization request.
 
 + Parameters
-    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
-    + ENROLLMENTCHECK_ID:`e067d83f-add7-4b6b-8884-dfa8693dde1f` (string, required) - This is the Enrollment Lookup ID.
+    + account_id:123456789 (string, required) - This is the merchant account number.
+    + enrollmentcheck_id:`e067d83f-add7-4b6b-8884-dfa8693dde1f` (string, required) - This is the Enrollment Lookup ID.
 
 + Request Authentication (application/json)
 
@@ -850,14 +850,14 @@ This is how you submit an Authentications request containing the payment authent
                 "xid": "aWg4N1ZZOE53TkFrazJuMmkyRDA="
             }   
             
-## Get Authentication [GET /v1/accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}]
+## Get Authentication [GET /v1/accounts/{account_id}/authentications/{authentication_id}]
 <a name="getauthentication" title="Look Up an Authentication"></a>
 
 This is how you look up an Authentication. 
 
 + Parameters
-    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
-    + AUTHENTICATION_ID:`5d4db3bc-34c9-417f-a051-0d992ad9284e` (string, required) - This is the Authentication ID.
+    + account_id:123456789 (string, required) - This is the merchant account number.
+    + authentication_id:`5d4db3bc-34c9-417f-a051-0d992ad9284e` (string, required) - This is the Authentication ID.
 
 + Request Get Authentication (application/json)
 
@@ -912,14 +912,14 @@ This is how you look up an Authentication.
                 "xid": "aWg4N1ZZOE53TkFrazJuMmkyRDA="
             }              
 
-## Get Authentication with Enrollment Check [GET /v1/accounts/{ACCOUNT_ID}/authentications/{AUTHENTICATION_ID}?fields=enrollmentchecks]
+## Get Authentication with Enrollment Check [GET /v1/accounts/{account_id}/authentications/{authentication_id}?fields=enrollmentchecks]
 <a name="getauthenticationcheck" title="Look Up an Authentication with Enrollment Check"></a>
 
 This is how you look up an Authentication and associated enrollment check in one request. 
 
 + Parameters
-    + ACCOUNT_ID:123456789 (string, required) - This is the merchant account number.
-    + AUTHENTICATION_ID:`5d4db3bc-34c9-417f-a051-0d992ad9284e` (string, required) - This is the Authentication ID.
+    + account_id:123456789 (string, required) - This is the merchant account number.
+    + authentication_id:`5d4db3bc-34c9-417f-a051-0d992ad9284e` (string, required) - This is the Authentication ID.
 
 + Request Get Authentication and Perform an Enrollment Check (application/json)
 
