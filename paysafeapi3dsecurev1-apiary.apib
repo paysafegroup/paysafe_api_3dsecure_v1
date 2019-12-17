@@ -3,6 +3,8 @@ HOST: https://api.test.paysafe.com/threedsecure/
 
 # Paysafe 3D Secure API
 
+>**Note:** To download a French version of this guide in PDF, click [here](http://mweb1-paysafeio-foreign.vie.skrill.net/fileadmin/5.3_Paysafe_3DS_API_fr.pdf)
+
 # Release Notes
 
 | Version   | Date          | Details |
@@ -15,7 +17,7 @@ A transaction using Verified by Visa or Mastercard SecureCode will initiate a re
 
 **Note:** Paysafe is compliant to 3D Secure version 1.0.2. 3D Secure is currently supported for Visa and Mastercard brands only. Contact your account manager for more information.
 
-The steps in 3D Secure cardholder authentication are shown below. For a detailed description, see the [Introduction to 3D Secure](https://developer.paysafe.com/en/rest-api/3ds/getting-started/introduction-to-3d-secure/).
+The steps in 3D Secure cardholder authentication are shown below. For a detailed description, see the [Introduction to 3D Secure](https://developer.paysafe.com/en/rest-apis/3ds/getting-started/introduction-to-3d-secure/).
 
 ![](https://developer.paysafe.com/fileadmin/flarecontent/devcentre/Content/Resources/Images/3DAPIOverview.png)
 
@@ -111,15 +113,15 @@ The following request types are supported:
 
 # Getting Started
 
-You can use the 3D Secure REST APIs to verify whether a credit card is enrolled for the 3D Secure service, and then, if it is, to authenticate that credit card when it is being used for an online purchase request. This enables you to process transactions through the Card Payments API that are fully 3D Secure. Click [here](https://developer.paysafe.com/en/rest-api/3ds/using-the-api/scenarios/) for descriptions of the main scenarios.
+You can use the 3D Secure REST APIs to verify whether a credit card is enrolled for the 3D Secure service, and then, if it is, to authenticate that credit card when it is being used for an online purchase request. This enables you to process transactions through the Card Payments API that are fully 3D Secure. Click [here](https://developer.paysafe.com/en/rest-apis/3ds/using-the-api/scenarios/) for descriptions of the main scenarios.
 
 # Testing Instructions
 
-The Paysafe Test environment can be used to test websites or applications without actually running transactions through a live 3D Secure service. It is important to make sure that your systems are working correctly before going into a live environment. Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/testing-instructions/) for details of how to use the test environment.
+The Paysafe Test environment can be used to test websites or applications without actually running transactions through a live 3D Secure service. It is important to make sure that your systems are working correctly before going into a live environment. Click [here](https://developer.paysafe.com/en/rest-apis/3ds/test-and-go-live/testing-instructions/) for details of how to use the test environment.
 
 # 3D Secure Results
 
-Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-secure-results-and-liability-shift/) for details of 3D Secure results and liability shift.
+Click [here](https://developer.paysafe.com/en/rest-apis/3ds/test-and-go-live/3d-secure-results-and-liability-shift/) for details of 3D Secure results and liability shift.
 
 <a name="isostandards" title="ISO Standards"></a>
 # ISO Standards
@@ -274,7 +276,7 @@ Click [here](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-s
 |txnTime                |UTC formatted date             |This is the date and time the request was processed. For example:<br/>2016-01-26T10:32:28Z|
 |error                  |[complex](#errorobject)        |       |
 |status                 |enum                           |This is the status of the Enrollment Lookup request. Possible values are:<br/><ul><li>COMPLETED - The transaction has been completed.</li><li>FAILED - The authentication request failed. Check the error code for details.</li></ul>|
-|threeDResult           |enum                           |This indicates the outcome of the Authentication.<br/><ul><li>Y &ndash; The cardholder successfully authenticated with their card issuer.</li><li>A &ndash; The cardholder authentication was attempted.</li><li>N &ndash; The cardholder failed to successfully authenticate with their card issuer.</li><li>U &ndash; Authentication with the card issuer was unavailable.</li><li>E &ndash; An error occurred during authentication.</li></ul><br/>See [3D Secure Results](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-secure-results/) for more information on these Authentication outcome values.|
+|threeDResult           |enum                           |This indicates the outcome of the Authentication.<br/><ul><li>Y &ndash; The cardholder successfully authenticated with their card issuer.</li><li>A &ndash; The cardholder authentication was attempted.</li><li>N &ndash; The cardholder failed to successfully authenticate with their card issuer.</li><li>U &ndash; Authentication with the card issuer was unavailable.</li><li>E &ndash; An error occurred during authentication.</li></ul><br/>See [3D Secure Results](https://developer.paysafe.com/en/rest-apis/3ds/test-and-go-live/3d-secure-results/) for more information on these Authentication outcome values.|
 |signatureStatus        |enum                           |This is the 3D Secure signature verification result value.<br/><ul><li>Y &ndash; All transaction and signature checks satisfied.</li><li>N &ndash; At least one transaction or signature check failed.</li></ul>|
 |eci                    |number                         |This is the E-Commerce Indicator (ECI). This value will be returned only on payer authentication transactions, or for enrollments where the issuer is non-participating and the card scheme supports it. This value must be appended to the authorization request, where it enables the interchange benefits granted to merchants processing payer Authentication transactions.<br/>**Visa**<br/><ul><li>5 &ndash; Identifies a successfully authenticated transaction.</li><li>6 &ndash; Identifies an attempts authenticated transaction.</li><li>7 &ndash; Identifies a non-authenticated transaction.</li></ul><br/>**Mastercard**<br/><br/><ul><li>1 &ndash; Identifies a non-authenticated transaction.</li><li>2 &ndash; Identifies a successfully authenticated transaction.</li></ul>|
 |cavv                   |string<br/>`length<=80`        |This is the Cardholder Authentication Verification Value, indicating that the transaction has been authenticated. This value should be appended to the authorization request signifying that the transaction has been successfully authenticated.|
@@ -415,7 +417,7 @@ If an error occurs during the 3D Secure processing at Visa, Mastercard, or the I
   * If an error occurs within the directory server the *threeDEnrollment* field will indicate "U" and no ACS URL will be returned.
   * If an error occurs during the Authentication, a *PaRes* will be returned as normal, with the error indicated within, along with a *threeDResult* of "U".
 
-In the event of an error, it is up to the merchant whether they wish to proceed with the card authorization. Please see [3D Secure Results](https://developer.paysafe.com/en/rest-api/3ds/test-and-go-live/3d-secure-results/) for more information. 
+In the event of an error, it is up to the merchant whether they wish to proceed with the card authorization. Please see [3D Secure Results](https://developer.paysafe.com/en/rest-apis/3ds/test-and-go-live/3d-secure-results/) for more information. 
 
 # Using the example API calls (Console Window)
 To configure and test the API examples, first click on one of the API calls in the API Reference section and then click **Switch to Console** in the right hand pane. 
